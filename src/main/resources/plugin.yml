@@ -1,0 +1,12 @@
+name: MagicStick
+version: '${project.version}'
+main: haruudon.udon.magicstick.MagicStick
+prefix: MagicStick
+authors: [ haruUDON ]
+description: 使い方
+
+commands:
+  testability:
+    description: アビリティのテスト
+    aliases: [ta]
+  test:
