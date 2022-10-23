@@ -1,6 +1,7 @@
 package haruudon.udon.magicstick.events;
 
 import haruudon.udon.magicstick.Join;
+import haruudon.udon.magicstick.Scoreboard;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
@@ -28,15 +29,18 @@ public class JoinEvent implements Listener {
         p.setHealth(20);
         p.setFoodLevel(20);
         p.setGameMode(GameMode.SURVIVAL);
-        p.getInventory().setItem(0, getItem().getItemStack("Custom"));
-        p.getInventory().setItem(4, getItem().getItemStack("Join"));
-        p.getInventory().setItem(8, getItem().getItemStack("Shop"));
+        p.getInventory().setItem(0, getItemData().getItemStack("Custom"));
+        p.getInventory().setItem(4, getItemData().getItemStack("Join"));
+        p.getInventory().setItem(8, getItemData().getItemStack("Shop"));
         getPlayerData().set(p.getUniqueId().toString() + ".name", p.getName());
         if (!getPlayerData().getBoolean(p.getUniqueId().toString() + ".firstjoin")) {
+            String[] listOfKilleffect = {"NullEffect"};
             getPlayerData().set(p.getUniqueId().toString() + ".firstjoin", true);
             getPlayerData().set(p.getUniqueId().toString() + ".coin", 0);
             getPlayerData().set(p.getUniqueId().toString() + ".magicore", 0);
             getPlayerData().set(p.getUniqueId().toString() + ".customkit.select", "null");
+            getPlayerData().set(p.getUniqueId().toString() + ".killeffect", "NullEffect");
+            getPlayerData().set(p.getUniqueId().toString() + ".have.killeffect", Arrays.asList(listOfKilleffect));
             for (int i = 0; i < 3; i++){
                 List<String> list = new ArrayList<>();
                 list.add("first");
@@ -53,6 +57,7 @@ public class JoinEvent implements Listener {
             }
         }
         savePlayerData();
+        Scoreboard.Create(p);
     }
 
     @EventHandler

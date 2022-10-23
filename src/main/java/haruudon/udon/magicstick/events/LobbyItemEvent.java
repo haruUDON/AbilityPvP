@@ -47,6 +47,9 @@ public class LobbyItemEvent implements Listener {
             } else if (item.getType() == Material.BED && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.RED + "退出する")) {
                 e.setCancelled(true);
                 Join.QuitPlayer(p);
+            } else if (item.getType() == Material.EMERALD && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_GREEN + "装飾品")) {
+                e.setCancelled(true);
+                GUIManager.SelectDecoration(p);
             }
         }
     }

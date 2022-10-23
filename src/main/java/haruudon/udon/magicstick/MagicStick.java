@@ -1,5 +1,6 @@
 package haruudon.udon.magicstick;
 
+import haruudon.udon.magicstick.commands.SetCrateBlock;
 import haruudon.udon.magicstick.commands.TestAbility;
 import haruudon.udon.magicstick.cooldown.Cooldown;
 import haruudon.udon.magicstick.events.*;
@@ -18,7 +19,9 @@ public final class MagicStick extends JavaPlugin {
     private static FileConfiguration weapon;
     private static FileConfiguration type;
     private static FileConfiguration map;
+    private static FileConfiguration kill;
     private static FileConfiguration item;
+    private static FileConfiguration block;
     @Override
     public void onEnable() {
         plugin = this;
@@ -27,7 +30,9 @@ public final class MagicStick extends JavaPlugin {
         weapon = YamlConfiguration.loadConfiguration(new File(MagicStick.getPlugin().getDataFolder(), "weapon.yml"));
         type = YamlConfiguration.loadConfiguration(new File(MagicStick.getPlugin().getDataFolder(), "type.yml"));
         map = YamlConfiguration.loadConfiguration(new File(MagicStick.getPlugin().getDataFolder(), "map.yml"));
+        kill = YamlConfiguration.loadConfiguration(new File(MagicStick.getPlugin().getDataFolder(), "effect.yml"));
         item = YamlConfiguration.loadConfiguration(new File(MagicStick.getPlugin().getDataFolder(), "item.yml"));
+        block = YamlConfiguration.loadConfiguration(new File(MagicStick.getPlugin().getDataFolder(), "block.yml"));
 
         Mana.setupMana();
         GUIManager.setupNow();
@@ -36,6 +41,7 @@ public final class MagicStick extends JavaPlugin {
 
         getCommand("testability").setExecutor(new TestAbility());
         getCommand("test").setExecutor(new TestAbility());
+        getCommand("crate").setExecutor(new SetCrateBlock());
 
         getServer().getPluginManager().registerEvents(new AbilityEvent(), this);
         getServer().getPluginManager().registerEvents(new FoodLevel(), this);
@@ -44,6 +50,7 @@ public final class MagicStick extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GUIClickEvent(), this);
         getServer().getPluginManager().registerEvents(new LobbyItemEvent(), this);
         getServer().getPluginManager().registerEvents(new WeaponEvent(), this);
+        getServer().getPluginManager().registerEvents(new CrateBlockEvent(), this);
     }
 
     @Override
@@ -58,30 +65,6 @@ public final class MagicStick extends JavaPlugin {
     public static FileConfiguration getPlayerData(){
         return data;
     }
-
-    public static void savePlayerData(){
-        try {
-            data.save(new File(MagicStick.getPlugin().getDataFolder(), "data.yml"));
-        } catch (IOException e) {
-            plugin.getLogger().info("データをセーブできませんでした。");
-        }
-    }
-
-//    public static void saveAbilityData(){
-//        try {
-//            ability.save(new File(MagicStick.getPlugin().getDataFolder(), "ability.yml"));
-//        } catch (IOException e) {
-//            plugin.getLogger().info("データをセーブできませんでした。");
-//        }
-//    }
-//
-//    public static void saveMapData(){
-//        try {
-//            map.save(new File(MagicStick.getPlugin().getDataFolder(), "map.yml"));
-//        } catch (IOException e) {
-//            plugin.getLogger().info("データをセーブできませんでした。");
-//        }
-//    }
 
     public static FileConfiguration getAbilityData(){
         return ability;
@@ -99,7 +82,35 @@ public final class MagicStick extends JavaPlugin {
         return map;
     }
 
-    public static FileConfiguration getItem(){
+    public static FileConfiguration getItemData(){
         return item;
     }
+
+    public static FileConfiguration getKillEffectData(){
+        return kill;
+    }
+
+    public static FileConfiguration getBlockData(){
+        return block;
+    }
+
+    public static void savePlayerData(){
+        try {
+            data.save(new File(MagicStick.getPlugin().getDataFolder(), "data.yml"));
+        } catch (IOException e) {
+            plugin.getLogger().info("データをセーブできませんでした。");
+        }
+    }
+
+    public static void saveBlockData(){
+        try {
+            block.save(new File(MagicStick.getPlugin().getDataFolder(), "block.yml"));
+        } catch (IOException e) {
+            plugin.getLogger().info("データをセーブできませんでした。");
+        }
+    }
+
+//    public static void setAndSavePlayerData(Player p, String s, Object o){
+//        getPlayerData().set(p.getUniqueId().toString() + s, o);
+//    }
 }

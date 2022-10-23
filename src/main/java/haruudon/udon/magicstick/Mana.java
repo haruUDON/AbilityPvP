@@ -2,15 +2,10 @@ package haruudon.udon.magicstick;
 
 import haruudon.udon.magicstick.events.FoodLevel;
 import org.bukkit.ChatColor;
-import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
 import java.util.UUID;
-
-import static haruudon.udon.magicstick.MagicStick.getPlayerData;
 
 public class Mana {
     public static HashMap<UUID, Integer> mana;
@@ -32,19 +27,13 @@ public class Mana {
         if (mana.containsKey(p.getUniqueId())){ //使用するマナの数が現在のマナの数に等しいもしくは少ないなら & hashmapにプレイヤーが登録されているか
             if (mana.get(p.getUniqueId()) >= useMana){
                 return true; //正しければtrueを返す
-            } else {
-                String select = getPlayerData().getString(p.getUniqueId().toString() + ".customkit.select");
-                List<String> type = getPlayerData().getStringList(p.getUniqueId().toString() + ".customkit." + select + ".type");
-                for (String pt : type) {
-                    if (pt.equalsIgnoreCase("vampire")){
-                        int needMana = useMana - getMana(p);
-                        if (p.getHealth() > needMana){
-                            p.setHealth(p.getHealth() - needMana);
-                            addMana(p, needMana);
-                            p.sendMessage(ChatColor.WHITE + "パッシブ発動: " + ChatColor.DARK_RED + "ヴァンパイア");
-                            return true;
-                        }
-                    }
+            } else if (TypeEvent.CheckType(p, "vampire")){
+                int needMana = useMana - getMana(p);
+                if (p.getHealth() > needMana){
+                    p.setHealth(p.getHealth() - needMana);
+                    addMana(p, needMana);
+                    p.sendMessage(ChatColor.WHITE + "パッシブ発動: " + ChatColor.DARK_RED + "ヴァンパイア");
+                    return true;
                 }
             }
         }
@@ -58,13 +47,9 @@ public class Mana {
     public static void removeMana(Player p, int removeMana){ //先にcheckManaでマナが足りるかチェックする
         int m = mana.get(p.getUniqueId()) - removeMana; //所持しているマナから使用するマナを引いた結果を記録する
         if (removeMana > 1) {
-            String select = getPlayerData().getString(p.getUniqueId().toString() + ".customkit.select");
-            List<String> type = getPlayerData().getStringList(p.getUniqueId().toString() + ".customkit." + select + ".type");
-            for (String pt : type) {
-                if (pt.equalsIgnoreCase("witch")) {
-                    m -= 1;
-                    p.sendMessage(ChatColor.WHITE + "パッシブ発動: " + ChatColor.DARK_PURPLE + "ウィッチ");
-                }
+            if (TypeEvent.CheckType(p, "witch")){
+                m += 1;
+                p.sendMessage(ChatColor.WHITE + "パッシブ発動: " + ChatColor.DARK_PURPLE + "ウィッチ");
             }
         }
         mana.put(p.getUniqueId(), m); //hashmapを上書きする

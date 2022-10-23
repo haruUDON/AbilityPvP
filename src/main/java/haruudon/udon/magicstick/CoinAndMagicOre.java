@@ -12,12 +12,14 @@ public class CoinAndMagicOre {
         int coin = getPlayerData().getInt(p.getUniqueId().toString() + ".coin");
         getPlayerData().set(p.getUniqueId().toString() + ".coin", coin + add);
         savePlayerData();
+        Scoreboard.Create(p);
     }
 
     public static void removeCoin(Player p, Integer remove) {
         int coin = getPlayerData().getInt(p.getUniqueId().toString() + ".coin");
         getPlayerData().set(p.getUniqueId().toString() + ".coin", coin - remove);
         savePlayerData();
+        Scoreboard.Create(p);
     }
 
     public static boolean checkUseCoin(Player p, Integer check) {
@@ -32,12 +34,14 @@ public class CoinAndMagicOre {
         int magicore = getPlayerData().getInt(p.getUniqueId().toString() + ".magicore");
         getPlayerData().set(p.getUniqueId().toString() + ".magicore", magicore + add);
         savePlayerData();
+        Scoreboard.Create(p);
     }
 
     public static void removeMagicOre(Player p, Integer remove) {
         int magicore = getPlayerData().getInt(p.getUniqueId().toString() + ".magicore");
         getPlayerData().set(p.getUniqueId().toString() + ".magicore", magicore - remove);
         savePlayerData();
+        Scoreboard.Create(p);
     }
 
     public static boolean checkUseMagicOre(Player p, Integer check) {

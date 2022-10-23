@@ -1,5 +1,6 @@
 package haruudon.udon.magicstick.cooldown;
 
+import haruudon.udon.magicstick.TypeEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -14,46 +15,42 @@ import java.util.*;
 import static haruudon.udon.magicstick.MagicStick.*;
 
 public class Cooldown {
-    public static Map<UUID, Map<String, SecSlot>> cooldowns;
-    public static Map<UUID, ArrayList<String>> downAbility;
+    public static Map<UUID, Map<String, SecSlot>> Cooldowns;
+    public static Map<UUID, ArrayList<String>> DownAbility;
 
     public static void setupCooldown(){
-        cooldowns = new HashMap<>();
-        downAbility = new HashMap<>();
+        Cooldowns = new HashMap<>();
+        DownAbility = new HashMap<>();
         new BukkitRunnable() {
             @Override
             public void run() {
                 for(Player loop : Bukkit.getOnlinePlayers()){
                     UUID uuid = loop.getUniqueId();
-                    if (downAbility.containsKey(uuid) && cooldowns.containsKey(uuid)){
-                        try{
-                            for (String ability : downAbility.get(uuid)){
-                                if (cooldowns.get(uuid).get(ability).getSec() > 0){
-                                    int sec = cooldowns.get(uuid).get(ability).getSec();
-                                    int slot = cooldowns.get(uuid).get(ability).getSlot();
-                                    sec -=1;
-                                    cooldowns.get(uuid).put(ability, new SecSlot(sec, slot));
-                                    if (sec % 20 == 0) {
-                                        ItemStack abilityItem = getAbilityData().getItemStack(ability + ".item1");
-                                        String abilityName = abilityItem.getItemMeta().getDisplayName();
-                                        ItemStack item = new ItemStack(Material.INK_SACK, sec / 20, (short) 8);
-                                        ItemMeta meta = item.getItemMeta();
-                                        meta.setDisplayName(abilityName);
-                                        item.setItemMeta(meta);
-                                        loop.getInventory().setItem(cooldowns.get(uuid).get(ability).getSlot(), item);
-                                    }
-                                } else if (cooldowns.get(uuid).get(ability).getSec() == 0){ //エラーはいてる。どれかがnullらしい。remove処理の部分かも
+                    if (DownAbility.containsKey(uuid) && Cooldowns.containsKey(uuid)) {
+                        List<String> removed = new ArrayList<>();
+                        for (String ability : DownAbility.get(uuid)) {//エラーはいてる。
+                            if (Cooldowns.get(uuid).get(ability).sec() > 0) {
+                                int sec = Cooldowns.get(uuid).get(ability).sec();
+                                int slot = Cooldowns.get(uuid).get(ability).slot();
+                                sec -= 1;
+                                Cooldowns.get(uuid).put(ability, new SecSlot(sec, slot));
+                                if (sec % 20 == 0) {
                                     ItemStack abilityItem = getAbilityData().getItemStack(ability + ".item1");
-                                    loop.getInventory().setItem(cooldowns.get(uuid).get(ability).getSlot(), abilityItem);
-                                    downAbility.get(uuid).remove(ability);
-                                    cooldowns.get(uuid).remove(ability);
+                                    String abilityName = abilityItem.getItemMeta().getDisplayName();
+                                    ItemStack item = new ItemStack(Material.INK_SACK, sec / 20, (short) 8);
+                                    ItemMeta meta = item.getItemMeta();
+                                    meta.setDisplayName(abilityName);
+                                    item.setItemMeta(meta);
+                                    loop.getInventory().setItem(Cooldowns.get(uuid).get(ability).slot(), item);
                                 }
-                            }
-                        } catch (ConcurrentModificationException e){
-                            if (!(downAbility.get(uuid).isEmpty()) && !(cooldowns.get(uuid).isEmpty())){
-                                loop.sendMessage(ChatColor.RED + "エラー");
+                            } else if (Cooldowns.get(uuid).get(ability).sec() == 0) {
+                                ItemStack abilityItem = getAbilityData().getItemStack(ability + ".item1");
+                                loop.getInventory().setItem(Cooldowns.get(uuid).get(ability).slot(), abilityItem);
+                                removed.add(ability);
+                                Cooldowns.get(uuid).remove(ability);
                             }
                         }
+                        DownAbility.get(uuid).removeAll(removed);
                     }
                 }
             }
@@ -61,13 +58,20 @@ public class Cooldown {
     }
 
     public static void setCooldown(Player p, int sec, String ability, int slot){
-        if (!(downAbility.containsKey(p.getUniqueId()))) downAbility.put(p.getUniqueId(), new ArrayList<>());
-        if (!(cooldowns.containsKey(p.getUniqueId()))) cooldowns.put(p.getUniqueId(), new HashMap<>());
-        downAbility.get(p.getUniqueId()).add(ability);
-        cooldowns.get(p.getUniqueId()).put(ability, new SecSlot(sec * 20, slot));
+        int reduction = 0;
+        if (TypeEvent.CheckType(p, "creeper")){
+            if (sec >= 20){
+                reduction += 5;
+                p.sendMessage(ChatColor.WHITE + "パッシブ発動: " + ChatColor.GREEN + "クリーパー");
+            }
+        }
+        if (!(DownAbility.containsKey(p.getUniqueId()))) DownAbility.put(p.getUniqueId(), new ArrayList<>());
+        if (!(Cooldowns.containsKey(p.getUniqueId()))) Cooldowns.put(p.getUniqueId(), new HashMap<>());
+        DownAbility.get(p.getUniqueId()).add(ability);
+        Cooldowns.get(p.getUniqueId()).put(ability, new SecSlot((sec * 20) - (reduction * 20), slot));
         ItemStack abilityItem = getAbilityData().getItemStack(ability + ".item1");
         String abilityName = abilityItem.getItemMeta().getDisplayName();
-        ItemStack item = new ItemStack(Material.INK_SACK, cooldowns.get(p.getUniqueId()).get(ability).getSec() / 20, (short) 8);
+        ItemStack item = new ItemStack(Material.INK_SACK, sec - reduction, (short) 8);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(abilityName);
         item.setItemMeta(meta);

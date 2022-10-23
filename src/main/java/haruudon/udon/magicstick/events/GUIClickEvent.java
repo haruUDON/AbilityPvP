@@ -147,11 +147,12 @@ public class GUIClickEvent implements Listener {
                             }
                         }
                     }
+                    return;
                 }
             }
             List<String> list2 = Arrays.asList("アビリティ1", "アビリティ2", "アビリティ3", "アビリティ4");
             for (String s : list2){
-                if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + s + "をセットする")){
+                if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "タイプ1" + "をセットする")){
                     e.setCancelled(true);
                     if (e.getCurrentItem().getType() == Material.THIN_GLASS){
                         List<String> ability = getPlayerData().getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability");
@@ -218,6 +219,7 @@ public class GUIClickEvent implements Listener {
                             }
                         }
                     }
+                    return;
                 }
             }
             if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "武器をセットする")){
@@ -245,7 +247,7 @@ public class GUIClickEvent implements Listener {
                     for (String allweapon : getWeaponData().getStringList("All")){
                         ItemStack item = getWeaponData().getItemStack(allweapon + ".item1");
                         String itemname = item.getItemMeta().getDisplayName();
-                        if (e.getCurrentItem().getItemMeta().getDisplayName().equalsIgnoreCase(itemname)) {
+                        if (e.getCurrentItem().getItemMeta().getDisplayName().equalsIgnoreCase(itemname)){
                             int addcost = 0;
                             int cost = getPlayerData().getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
                             String weapon = getPlayerData().getString(uuid + ".customkit." + now.get(p.getUniqueId()) + ".weapon");
@@ -328,6 +330,35 @@ public class GUIClickEvent implements Listener {
                         break;
                 }
                 e.setCancelled(true);
+            } else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "キルエフェクトをセットする")){
+                e.setCancelled(true);
+                if (e.getSlot() == 31){
+                    GUIManager.SelectDecoration(p);
+                } else {
+                    for (String allKillEffect : getKillEffectData().getStringList("All")) {
+                        ItemStack item = getWeaponData().getItemStack(allKillEffect + ".item1");
+                        String itemname = item.getItemMeta().getDisplayName();
+                        if (e.getCurrentItem().getItemMeta().getDisplayName().equalsIgnoreCase(itemname)){
+                            if (getPlayerData().getStringList(uuid + ".have.killeffect").contains(allKillEffect)){
+                                getPlayerData().set(uuid + ".killeffect", allKillEffect);
+                                p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+                                GUIManager.SelectKillEffect(p);
+                            }
+                        }
+                    }
+                }
+            } else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "装飾品")){
+                e.setCancelled(true);
+                if (e.getSlot() == 31){
+                    p.closeInventory();
+                } else if (e.getSlot() == 10){
+                    GUIManager.SelectKillEffect(p);
+                }
+            }  else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "ガチャ")){
+                e.setCancelled(true);
+                if (e.getSlot() == 31){
+                    p.closeInventory();
+                }
             } else {
                 if (!(p.isOp())){
                     e.setCancelled(true);

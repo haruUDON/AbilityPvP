@@ -14,21 +14,19 @@ import org.bukkit.scoreboard.Team;
 import java.util.*;
 
 import static haruudon.udon.magicstick.MagicStick.*;
-import static haruudon.udon.magicstick.cooldown.Cooldown.cooldowns;
-import static haruudon.udon.magicstick.cooldown.Cooldown.downAbility;
+import static haruudon.udon.magicstick.cooldown.Cooldown.Cooldowns;
+import static haruudon.udon.magicstick.cooldown.Cooldown.DownAbility;
 
 public class Join {
 
     public static ArrayList<Player> JoinPlayer;
     public static ArrayList<Player> GamePlayer;
-    public static HashMap<Player, Location> DoNotMove;
     public static ArrayList<Player> Alive;
     public static ArrayList<Player> Spectator;
 
     public static void setupJoinPlayer() {
         JoinPlayer = new ArrayList<>();
         GamePlayer = new ArrayList<>();
-        DoNotMove = new HashMap<>();
         Alive = new ArrayList<>();
         Spectator = new ArrayList<>();
     }
@@ -40,7 +38,7 @@ public class Join {
                 if (JoinPlayer.size() < 4) {
                     JoinPlayer.add(p);
                     p.getInventory().clear();
-                    p.getInventory().setItem(8, getItem().getItemStack("Quit"));
+                    p.getInventory().setItem(8, getItemData().getItemStack("Quit"));
                     for (Player join : JoinPlayer) {
                         join.sendMessage(ChatColor.GRAY + p.getName() + ChatColor.YELLOW + "が参加しました (" + ChatColor.AQUA + JoinPlayer.size() + ChatColor.YELLOW + "/"
                                 + ChatColor.AQUA + "4" + ChatColor.YELLOW + ")");
@@ -91,9 +89,9 @@ public class Join {
             }
             JoinPlayer.remove(p);
             p.getInventory().clear();
-            p.getInventory().setItem(0, getItem().getItemStack("Custom"));
-            p.getInventory().setItem(4, getItem().getItemStack("Join"));
-            p.getInventory().setItem(8, getItem().getItemStack("Shop"));
+            p.getInventory().setItem(0, getItemData().getItemStack("Custom"));
+            p.getInventory().setItem(4, getItemData().getItemStack("Join"));
+            p.getInventory().setItem(8, getItemData().getItemStack("Shop"));
         } else {
             p.sendMessage(ChatColor.RED + "あなたはゲームに参加していません");
             p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
@@ -109,10 +107,10 @@ public class Join {
         Collections.shuffle(LocationList);
         int list = 0;
         for (Player player : GamePlayer){
+            haruudon.udon.magicstick.Scoreboard.Remove(player);
             player.getInventory().clear();
             Location loc = (Location) getMapData().get(Map + LocationList.get(list));
             player.teleport(loc);
-            DoNotMove.put(player, loc);
             player.sendTitle(ChatColor.WHITE + "" + ChatColor.BOLD + Map, ChatColor.GREEN + "マップ", 0, 60, 20);
             list += 1;
         }
@@ -121,7 +119,7 @@ public class Join {
 
     public static void GameStartTimer() {
         new BukkitRunnable() {
-            int StartGameTimer = 10;
+            int StartGameTimer = 7;
             @Override
             public void run() {
                 if (GamePlayer.isEmpty()){
@@ -134,9 +132,11 @@ public class Join {
                     if (t == null){
                         t = score.registerNewTeam("hide");
                         t.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+                        t.setCanSeeFriendlyInvisibles(false);
                     }
                     //ここまで
                     for (Player player : GamePlayer) {
+                        player.sendTitle(ChatColor.RED + "" + ChatColor.BOLD + "Start!", "", 0, 60, 20);
                         player.sendMessage(ChatColor.GREEN + "アイテムを支給しました");
                         t.addEntry(player.getName());
                         Mana.setInitialMana(player);
@@ -144,14 +144,17 @@ public class Join {
                         String select = getPlayerData().getString(uuid + ".customkit.select");
                         player.getInventory().setItem(0, getWeaponData()
                                 .getItemStack(getPlayerData().getString(uuid + ".customkit." + select + ".weapon") + ".item1"));
-                        int slot = 1;
+                        int slot1 = 1;
                         for (String ability : getPlayerData().getStringList(uuid + ".customkit." + select + ".ability")) {
-                            player.getInventory().setItem(slot, getAbilityData().getItemStack(ability + ".item1"));
-                            slot++;
+                            player.getInventory().setItem(slot1, getAbilityData().getItemStack(ability + ".item1"));
+                            slot1++;
                         }
                         int maxHealth = 0;
+                        int slot2 = 7;
                         for (String type : getPlayerData().getStringList(uuid + ".customkit." + select + ".type")){
+                            player.getInventory().setItem(slot2, getTypeData().getItemStack(type + ".item1"));
                             maxHealth += getTypeData().getInt(type + ".health");
+                            slot2++;
                         }
                         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
                         player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
@@ -160,23 +163,18 @@ public class Join {
                         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                         this.cancel();
                     }
-                } else if (StartGameTimer == 3) {
+                } else if (StartGameTimer == 5 || StartGameTimer == 4) {
                     for (Player player : GamePlayer) {
-                        player.sendTitle(ChatColor.RED + "" + ChatColor.BOLD + "Start!", "", 0, 60, 20);
-                        DoNotMove.remove(player);
+                        player.sendTitle(ChatColor.YELLOW + "" + ChatColor.BOLD + StartGameTimer, "", 0, 60, 20);
                     }
-                } else if (StartGameTimer == 8 || StartGameTimer == 7) {
+                } else if (StartGameTimer == 3 || StartGameTimer == 2 || StartGameTimer == 1) {
                     for (Player player : GamePlayer) {
-                        player.sendTitle(ChatColor.YELLOW + "" + ChatColor.BOLD + (StartGameTimer - 3), "", 0, 60, 20);
-                    }
-                } else if (StartGameTimer == 6 || StartGameTimer == 5 || StartGameTimer == 4) {
-                    for (Player player : GamePlayer) {
-                        player.sendTitle(ChatColor.RED + "" + ChatColor.BOLD + (StartGameTimer - 3), "", 0, 60, 20);
+                        player.sendTitle(ChatColor.RED + "" + ChatColor.BOLD + StartGameTimer, "", 0, 60, 20);
                     }
                 }
                 StartGameTimer -= 1;
             }
-        }.runTaskTimer(MagicStick.getPlugin(), 0, 20L);
+        }.runTaskTimer(MagicStick.getPlugin(), 0, 20);
     }
 
     public static void GameEnd(String result) {
@@ -187,6 +185,7 @@ public class Join {
         Location lobby = (Location) getMapData().get("MainLobby.location");
         Spectator.clear();
         for (Player player : GamePlayer){
+            haruudon.udon.magicstick.Scoreboard.Create(player);
             t.removeEntry(player.getName());
             player.setGameMode(GameMode.SURVIVAL);
             player.teleport(lobby);
@@ -195,14 +194,14 @@ public class Join {
             player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);
             player.setHealth(20);
             player.setFoodLevel(20);
-            player.getInventory().setItem(0, getItem().getItemStack("Custom"));
-            player.getInventory().setItem(4, getItem().getItemStack("Join"));
-            player.getInventory().setItem(8, getItem().getItemStack("Shop"));
+            player.getInventory().setItem(0, getItemData().getItemStack("Custom"));
+            player.getInventory().setItem(4, getItemData().getItemStack("Join"));
+            player.getInventory().setItem(8, getItemData().getItemStack("Shop"));
             Mana.mana.remove(player.getUniqueId());
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 0);
-            if (cooldowns.containsKey(player.getUniqueId())){
-                downAbility.remove(player.getUniqueId());
-                cooldowns.remove(player.getUniqueId());
+            if (Cooldowns.containsKey(player.getUniqueId())){
+                DownAbility.remove(player.getUniqueId());
+                Cooldowns.remove(player.getUniqueId());
             }
         }
         switch (result) {

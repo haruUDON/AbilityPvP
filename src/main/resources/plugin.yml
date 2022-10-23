@@ -10,3 +10,6 @@ commands:
     description: アビリティのテスト
     aliases: [ta]
   test:
+    description: テスト
+  crate:
+    description: ガチャブロックの付与

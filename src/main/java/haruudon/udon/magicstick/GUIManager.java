@@ -1,11 +1,9 @@
 package haruudon.udon.magicstick;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -397,6 +395,104 @@ public class GUIManager {
                 i++;
             }
         }
+        p.openInventory(inventory);
+    }
+
+    public static void SelectDecoration(Player p){
+        p.playSound(p.getLocation(), Sound.BLOCK_WOOD_BUTTON_CLICK_ON, 1, 1);
+        Inventory inventory = Bukkit.createInventory(p,36, ChatColor.DARK_GRAY + "装飾品");
+        ItemStack kill = new ItemStack(Material.DIAMOND_SWORD);
+        ItemStack back = new ItemStack(Material.BARRIER);
+        ItemMeta killMeta = kill.getItemMeta();
+        ItemMeta backMeta = back.getItemMeta();
+        killMeta.setDisplayName(ChatColor.DARK_AQUA + "キルエフェクト");
+        killMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        backMeta.setDisplayName(ChatColor.RED + "戻る");
+        kill.setItemMeta(killMeta);
+        back.setItemMeta(backMeta);
+        ItemStack background = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 15);
+        for (int i = 0; i <= 35; i++){
+            inventory.setItem(i, background);
+        }
+        inventory.setItem(10, kill);
+        inventory.setItem(31, back);
+        p.openInventory(inventory);
+    }
+
+    public static void SelectKillEffect(Player p){
+        p.playSound(p.getLocation(), Sound.BLOCK_WOOD_BUTTON_CLICK_ON, 1, 1);
+        Inventory inventory = Bukkit.createInventory(p,36, ChatColor.DARK_GRAY + "キルエフェクトをセットする");
+        ItemStack back = new ItemStack(Material.BARRIER);
+        ItemMeta backMeta = back.getItemMeta();
+        backMeta.setDisplayName(ChatColor.RED + "戻る");
+        back.setItemMeta(backMeta);
+        ItemStack background = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 15);
+        for (int i = 0; i <= 35; i++){
+            inventory.setItem(i, background);
+        }
+        inventory.setItem(31, back);
+        int slot = 0;
+        List<String> allKillEffect = getKillEffectData().getStringList("All");
+//        Optional<String> common = allKillEffect.stream().filter(s -> getKillEffectData().getString(s + ".rarity").equalsIgnoreCase("common")).findAny();
+//        Optional<String> rare = allKillEffect.stream().filter(s -> getKillEffectData().getString(s + ".rarity").equalsIgnoreCase("rare")).findAny();
+//        Optional<String> epic = allKillEffect.stream().filter(s -> getKillEffectData().getString(s + ".rarity").equalsIgnoreCase("epic")).findAny();
+//        Optional<String> legendary = allKillEffect.stream().filter(s -> getKillEffectData().getString(s + ".rarity").equalsIgnoreCase("legendary")).findAny();
+//        List<String> All = new ArrayList<>();
+//        All.add("NullEffect");
+//        All.addAll(common.stream().toList());
+//        All.addAll(rare.stream().toList());
+//        All.addAll(epic.stream().toList());
+//        All.addAll(legendary.stream().toList());
+        for (String s : allKillEffect){
+            ItemStack killeffect = getKillEffectData().getItemStack(s + ".item1");
+            ItemMeta meta = killeffect.getItemMeta();
+            List<String> lore = meta.getLore();
+            if (getPlayerData().getString(p.getUniqueId().toString() + ".killeffect").equalsIgnoreCase(s)){
+                lore.set((lore.size() - 1), ChatColor.YELLOW + "使用中");
+            } else if (getPlayerData().getStringList(p.getUniqueId().toString() + ".have.killeffect").contains(s)){
+                lore.set((lore.size() - 1), ChatColor.GREEN + "所持済み");
+            } else {
+                lore.set((lore.size() - 1), ChatColor.RED + "未所持");
+            }
+            meta.setLore(lore);
+            killeffect.setItemMeta(meta);
+            inventory.setItem(slot, killeffect);
+            slot++;
+        }
+        p.openInventory(inventory);
+    }
+
+    public static void OpenCrateMenu(Player p){
+        p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1, 0.7f);
+        p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1f);
+        p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.5f);
+        Location loc = (Location) MagicStick.getBlockData().get("Crate");
+        loc.add(0.5, 0, 0.5);
+        p.spawnParticle(Particle.ENCHANTMENT_TABLE, loc, 100, 0.3, 0.3, 0.3, 1);
+        p.spawnParticle(Particle.SPELL_WITCH, loc, 100, 0.3, 0.3, 0.3, 1);
+        p.spawnParticle(Particle.END_ROD, loc, 100, 0.3, 0.3, 0.3, 0.1);
+        loc.subtract(0.5, 0, 0.5);
+        Inventory inventory = Bukkit.createInventory(p,36, ChatColor.DARK_GRAY + "ガチャ");
+        ItemStack kill = new ItemStack(Material.GOLD_SWORD);
+        ItemStack ability = new ItemStack(Material.BOOK);
+        ItemStack back = new ItemStack(Material.BARRIER);
+        ItemMeta killMeta = kill.getItemMeta();
+        ItemMeta abilityMeta = ability.getItemMeta();
+        ItemMeta backMeta = back.getItemMeta();
+        killMeta.setDisplayName(ChatColor.DARK_RED + "キルエフェクトガチャ");
+        killMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        abilityMeta.setDisplayName(ChatColor.DARK_PURPLE + "アビリティガチャ");
+        backMeta.setDisplayName(ChatColor.RED + "戻る");
+        kill.setItemMeta(killMeta);
+        ability.setItemMeta(abilityMeta);
+        back.setItemMeta(backMeta);
+        ItemStack background = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 15);
+        for (int i = 0; i <= 35; i++){
+            inventory.setItem(i, background);
+        }
+        inventory.setItem(11, kill);
+        inventory.setItem(15, ability);
+        inventory.setItem(31, back);
         p.openInventory(inventory);
     }
 }

@@ -1,19 +1,16 @@
 package haruudon.udon.magicstick.events;
 
-import haruudon.udon.magicstick.MagicStick;
-import haruudon.udon.magicstick.Join;
-import haruudon.udon.magicstick.Mana;
+import haruudon.udon.magicstick.*;
 import haruudon.udon.magicstick.cooldown.Cooldown;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -27,7 +24,6 @@ import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 
 import static haruudon.udon.magicstick.Join.*;
@@ -49,12 +45,17 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.CHORUS_FRUIT_POPPED && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_PURPLE + "リワインドタイム")) {
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 e.setCancelled(true);
                 if (checkUseMana(p, 7)) {
                     removeMana(p, 7);
                     lastlocation.put(p, p.getLocation());
                     // [Player:haruUDON, Location:x10 y20 z30][][][][][][][][][]
-                    p.getWorld().playSound(p.getLocation(), Sound.BLOCK_END_PORTAL_FRAME_FILL, 5, 0);
+                    p.playSound(p.getLocation(), Sound.BLOCK_END_PORTAL_FRAME_FILL, 1, 0);
                     p.getInventory().setItem(p.getInventory().getHeldItemSlot(), null);
                     new BukkitRunnable() {
                         @Override
@@ -96,7 +97,7 @@ public class AbilityEvent implements Listener {
 
 //    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "command");
 
-    HashMap<UUID, Boolean> ShapeMob = new HashMap<>();
+    public static HashMap<UUID, String> ShapeMob = new HashMap<>();
     HashMap<UUID, Double> BeforeHealth = new HashMap<>();
 
     @EventHandler
@@ -108,10 +109,15 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.FLINT && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_RED + "ヴァンパイアウィング")) {
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 e.setCancelled(true);
                 if (checkUseMana(p, 4)) {
                     removeMana(p, 3);
-                    ShapeMob.put(p.getUniqueId(), true);
+                    ShapeMob.put(p.getUniqueId(), "Bat");
                     BeforeHealth.put(p.getUniqueId(), p.getHealth());
                     int slot = p.getInventory().getHeldItemSlot();
                     String cmd1 = "lp user %player% permission set idisguise.*";
@@ -119,7 +125,7 @@ public class AbilityEvent implements Listener {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd1); //disコマンドを使用するための権限を与える
                     p.setAllowFlight(true);
                     p.setFlying(true);
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 999999, 0, true));
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 999999, 10, true));
                     p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BAT_LOOP, 10, 1);
                     p.getWorld().spawnParticle(Particle.DAMAGE_INDICATOR, p.getLocation(), 50, 0.5, 1.5, 0.5, 0.5);
                     p.getInventory().setItem(p.getInventory().getHeldItemSlot(), null);
@@ -225,13 +231,18 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.BEETROOT && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_RED + "ヴァンパイアハート")){
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 e.setCancelled(true);
                 if (checkUseMana(p, 5)) {
                     removeMana(p, 5);
                     Cooldown.setCooldown(p, getAbilityData().getInt("VampireHeart.cooltime"), "VampireHeart", p.getInventory().getHeldItemSlot());
                     // アビリティの処理
-                    for (Player other : Bukkit.getServer().getOnlinePlayers()) {
-                        if (other.getWorld() == p.getWorld() && other.getLocation().distanceSquared(p.getLocation()) <= 40) {
+                    for (Player other : Alive) {
+                        if (other.getWorld() == p.getWorld() && other.getLocation().distanceSquared(p.getLocation()) <= 16) {
                             if (!(other == p)) {
                                 if (other.getWorld() == p.getWorld()) {
                                     other.damage(6, p);
@@ -265,6 +276,11 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.ENCHANTED_BOOK && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_PURPLE + "フリーズスペル")) {
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 if (checkUseMana(p, 3)) {
                     removeMana(p, 3);
                     Cooldown.setCooldown(p, getAbilityData().getInt("FriezeSpell.cooltime"), "FriezeSpell", p.getInventory().getHeldItemSlot());
@@ -286,18 +302,15 @@ public class AbilityEvent implements Listener {
                             if (loc.getBlock().getType().isSolid()) {
                                 cancel();
                             }
-                            for (Entity entity : loc.getChunk().getEntities()) { //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
-                                if (entity.getLocation().distance(loc) < 2) { //エンティティの半径1.5の範囲内にlocがあるか確認
-                                    if (entity != (p)) { //エンティティがクリックしたプレイヤーじゃないか
-                                        if (entity.getType().isAlive()) { //エンティティが生きているかどうか
-                                            Damageable d = (Damageable) entity;
-                                            d.damage(5, p);
+                            for (Player player : loc.getChunk().getWorld().getPlayers()) { //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
+                                if (player.getLocation().distance(loc) < 2) { //エンティティの半径1.5の範囲内にlocがあるか確認
+                                    if (player != (p)) { //エンティティがクリックしたプレイヤーじゃないか
+                                        if (Alive.contains(player)) { //エンティティが生きているかどうか
                                             p.getWorld().spawnParticle(Particle.SNOWBALL, loc, 50, 0, 0, 0, 1);
-                                            entity.getWorld().spawnParticle(Particle.BLOCK_CRACK, entity.getLocation().add(0, 1, 0), 100, 0.5, 1, 0.5, 0, new MaterialData(Material.ICE));
-                                            entity.getWorld().playSound(entity.getLocation(), Sound.BLOCK_ANVIL_LAND, 1, 0);
-                                            if (entity instanceof LivingEntity) {
-                                                ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 3 * 20, 9, true));
-                                            }
+                                            player.getWorld().spawnParticle(Particle.BLOCK_CRACK, player.getLocation().add(0, 1, 0), 100, 0.5, 1, 0.5, 0, new MaterialData(Material.ICE));
+                                            player.getWorld().playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1, 0);
+                                            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 3 * 20, 9, true));
+                                            player.damage(5, p);
                                             this.cancel();
                                         }
                                     }
@@ -327,6 +340,11 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.ENCHANTED_BOOK && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_PURPLE + "ヒールスペル")) {
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 e.setCancelled(true);
                 if (checkUseMana(p, 4)) {
                     if (p.getHealth() < p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()){
@@ -359,6 +377,11 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.INK_SACK && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_RED + "ヴァンパイアブラッド")) {
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 e.setCancelled(true);
                 MaterialData data = item.getData();
                 if (data instanceof Dye dye) {
@@ -430,9 +453,13 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.SPECTRAL_ARROW && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.GRAY + "スカルスナイパー")){
-                if (checkUseMana(p, 15)) {
-                    removeMana(p, 15);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("SkullSniper.cooltime"), "SkullSniper", p.getInventory().getHeldItemSlot());
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
+                if (checkUseMana(p, 17)) {
+                    removeMana(p, 17);
                     // アビリティの処理
                     p.getWorld().playSound(p.getLocation(), Sound.ENTITY_FIREWORK_BLAST, 20, 0.5F);
                     p.getWorld().playSound(p.getLocation(), Sound.ENTITY_FIREWORK_BLAST, 20, 0.6F);
@@ -446,25 +473,29 @@ public class AbilityEvent implements Listener {
                         double y = direction.getY() * i + 1.5;
                         double z = direction.getZ() * i;
                         loc.add(x, y, z);
-                        p.getWorld().spawnParticle(Particle.CRIT, loc, 2, 0, 0, 0, 0.05);
+                        p.getWorld().spawnParticle(Particle.CRIT, loc, 1, 0, 0, 0, 0.05);
                         if (loc.getBlock().getType().isSolid()) {
+                            Cooldown.setCooldown(p, getAbilityData().getInt("SkullSniper.cooltime"), "SkullSniper", p.getInventory().getHeldItemSlot());
                             break;
                         }
-                        for (Entity entity : loc.getChunk().getEntities()) { //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
-                            if (entity.getLocation().distance(loc) < 1.5) { //エンティティの半径1.5の範囲内にlocがあるか確認
-                                if (entity != (p)) { //エンティティがクリックしたプレイヤーじゃないか
-                                    if (entity.getType().isAlive()) { //エンティティが生きているかどうか
-                                        Damageable d = (Damageable) entity;
-                                        d.damage(12, p);
+                        for (Player player : loc.getChunk().getWorld().getPlayers()) { //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
+                            if (player.getLocation().distance(loc) < 1.5) { //エンティティの半径1.5の範囲内にlocがあるか確認
+                                if (player != (p)) { //エンティティがクリックしたプレイヤーじゃないか
+                                    if (Alive.contains(player)) { //エンティティが生きているかどうか
+                                        Cooldown.setCooldown(p, (getAbilityData().getInt("SkullSniper.cooltime") - 20), "SkullSniper", p.getInventory().getHeldItemSlot());
                                         p.getWorld().spawnParticle(Particle.CRIT, loc, 50, 0, 0, 0, 1);
-                                        entity.getWorld().spawnParticle(Particle.BLOCK_CRACK, entity.getLocation(), 100, 0.5, 1, 0.5, 0, new MaterialData(Material.BONE_BLOCK));
-                                        entity.getWorld().playSound(entity.getLocation(), Sound.BLOCK_ANVIL_LAND, 1, 0);
+                                        player.getWorld().spawnParticle(Particle.BLOCK_CRACK, player.getLocation(), 100, 0.5, 1, 0.5, 0, new MaterialData(Material.BONE_BLOCK));
+                                        player.getWorld().playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1, 0);
+                                        player.damage(12, p);
                                         break outer;
                                     }
                                 }
                             }
                         }
                         loc.subtract(x, y, z);
+                        if (i == 39){
+                            Cooldown.setCooldown(p, getAbilityData().getInt("SkullSniper.cooltime"), "SkullSniper", p.getInventory().getHeldItemSlot());
+                        }
                     }
                     //ここまで
                 } else {
@@ -483,6 +514,11 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.LEASH && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.GRAY + "グラップリングアロウ")) {
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 if (checkUseMana(p, 7)) {
                     removeMana(p, 7);
                     Cooldown.setCooldown(p, getAbilityData().getInt("GrapplingArrow.cooltime"), "GrapplingArrow", p.getInventory().getHeldItemSlot());
@@ -516,6 +552,11 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.INK_SACK && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.GRAY + "リフレッシュデバフ")){
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 e.setCancelled(true);
                 if (checkUseMana(p, 4)){
                     removeMana(p, 4);
@@ -524,6 +565,9 @@ public class AbilityEvent implements Listener {
                     p.removePotionEffect(PotionEffectType.WEAKNESS);
                     p.removePotionEffect(PotionEffectType.POISON);
                     p.removePotionEffect(PotionEffectType.BLINDNESS);
+                    p.removePotionEffect(PotionEffectType.CONFUSION);
+                    p.removePotionEffect(PotionEffectType.SLOW_DIGGING);
+                    p.removePotionEffect(PotionEffectType.GLOWING);
                     p.playSound(p.getLocation(), Sound.ENTITY_BOBBER_SPLASH, 1, 1);
                     p.spawnParticle(Particle.WATER_WAKE, p.getLocation(), 50, 0.2, 1, 0.2, 0.3F);
                 } else {
@@ -545,6 +589,11 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.BONE && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.GRAY + "ボーンヴェール")){
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 e.setCancelled(true);
                 if (checkUseMana(p, 11)) {
                     removeMana(p, 11);
@@ -575,6 +624,11 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.EYE_OF_ENDER && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_BLUE + "エンダーテレポート")){
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 if (checkUseMana(p, 5)){
                     removeMana(p, 5);
                     e.setCancelled(true);
@@ -597,22 +651,19 @@ public class AbilityEvent implements Listener {
                             p.getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDERMEN_TELEPORT, 5, 1);
                             break;
                         }
-                        for (Entity entity : loc.getChunk().getEntities()){ //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
-                            if (entity.getLocation().distance(loc) < 2) { //エンティティの半径1.5の範囲内にlocがあるか確認
-                                if (entity != (p)) { //エンティティがクリックしたプレイヤーじゃないか
-                                    if (entity.getType().isAlive()) { //エンティティが生きているかどうか
-                                        Damageable d = (Damageable) entity;
-                                        d.damage(3, p);
+                        for (Player player : loc.getChunk().getWorld().getPlayers()){ //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
+                            if (player.getLocation().distance(loc) < 2) { //エンティティの半径1.5の範囲内にlocがあるか確認
+                                if (player != (p)) { //エンティティがクリックしたプレイヤーじゃないか
+                                    if (Alive.contains(player)) { //エンティティが生きているかどうか
                                         double Tx = direction.getX() * 1;
                                         double Ty = direction.getY() * 2;
                                         double Tz = direction.getZ() * 1;
                                         p.teleport(loc.subtract(Tx, Ty, Tz));
                                         p.getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDERMEN_TELEPORT, 5, 1);
-                                        entity.getWorld().spawnParticle(Particle.BLOCK_CRACK, entity.getLocation().add(0, 1, 0), 50, 0.2, 0.2, 0.2, 0, new MaterialData(Material.COAL_BLOCK));
-                                        entity.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_BLAST, 1, 1);
-                                        if (entity instanceof LivingEntity) {
-                                            ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 50, 0, true));
-                                        }
+                                        player.getWorld().spawnParticle(Particle.BLOCK_CRACK, player.getLocation().add(0, 1, 0), 50, 0.2, 0.2, 0.2, 0, new MaterialData(Material.COAL_BLOCK));
+                                        player.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_BLAST, 1, 1);
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 50, 0, true));
+                                        player.damage(3, p);
                                         break outer;
                                     }
                                 }
@@ -642,6 +693,11 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.FIREWORK_CHARGE && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_BLUE + "エンダースモーク")){
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 e.setCancelled(true);
                 if (checkUseMana(p, 8)) {
                     removeMana(p, 8);
@@ -649,7 +705,7 @@ public class AbilityEvent implements Listener {
                     p.getWorld().spawnParticle(Particle.SMOKE_LARGE, p.getLocation(), 100, 2, 1, 2, 0.5);
                     p.getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 5, 0);
                     // アビリティの処理
-                    for (Player other : Bukkit.getServer().getOnlinePlayers()) {
+                    for (Player other : Alive) {
                         if (other.getWorld() == p.getWorld() && other.getLocation().distanceSquared(p.getLocation()) <= 35) {
                             if (!(other == p)) {
                                 if (other.getWorld() == p.getWorld()) {
@@ -679,6 +735,11 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.ROTTEN_FLESH && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_GREEN + "ゾンビシューター")){
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 e.setCancelled(true);
                 if (checkUseMana(p, 2)) {
                     removeMana(p, 2);
@@ -696,26 +757,20 @@ public class AbilityEvent implements Listener {
                             if (delete >= 30){
                                 dropItem.remove();
                                 this.cancel();
-                            } else if (!(dropItem.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() == Material.AIR)){
-                                dropItem.remove();
-                                this.cancel();
                             } else {
-                                for (Entity entity : dropItem.getLocation().getChunk().getEntities()){ //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
-                                    if (entity.getLocation().distance(dropItem.getLocation()) < 2) { //エンティティの半径1.5の範囲内にlocがあるか確認
-                                        if (entity != (p)) { //エンティティがクリックしたプレイヤーじゃないか
-                                            if (entity.getType().isAlive()) { //エンティティが生きているかどうか
-                                                Damageable d = (Damageable) entity;
-                                                d.damage(3, p);
-                                                if (entity instanceof Player victim){
-                                                    if (checkUseMana(victim, 2)){
-                                                        removeMana(victim, 2);
-                                                        addMana(p, 2);
-                                                        p.playSound(p.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
-                                                        victim.playSound(victim.getLocation(), Sound.ENTITY_ZOMBIE_INFECT, 1, 1);
-                                                    }
+                                for (Player player : dropItem.getLocation().getChunk().getWorld().getPlayers()){ //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
+                                    if (player.getLocation().distance(dropItem.getLocation()) < 2) { //エンティティの半径1.5の範囲内にlocがあるか確認
+                                        if (player != (p)) { //エンティティがクリックしたプレイヤーじゃないか
+                                            if (Alive.contains(player)) { //エンティティが生きているかどうか
+                                                if (checkUseMana(player, 2)){
+                                                    removeMana(player, 2);
+                                                    addMana(p, 2);
+                                                    p.playSound(p.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
+                                                    player.playSound(player.getLocation(), Sound.ENTITY_ZOMBIE_INFECT, 1, 1);
+                                                    player.damage(2, p);
+                                                    dropItem.remove();
+                                                    this.cancel();
                                                 }
-                                                dropItem.remove();
-                                                this.cancel();
                                             }
                                         }
                                     }
@@ -743,12 +798,17 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.ENDER_PORTAL_FRAME && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_GREEN + "イモータルグレイブ")) {
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 e.setCancelled(true);
-                if (checkUseMana(p, 17)) {
+                if (checkUseMana(p, 10)) {
                     if (!(p.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() == Material.AIR)){
-                        if (p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / 2 < p.getHealth()) {
-                            p.setHealth(p.getHealth() - (p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / 2));
-                            removeMana(p, 17);
+                        if (p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / 3 < p.getHealth()) {
+                            p.setHealth(p.getHealth() - (p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / 3));
+                            removeMana(p, 10);
                             Cooldown.setCooldown(p, getAbilityData().getInt("ImmortalGrave.cooltime"), "ImmortalGrave", p.getInventory().getHeldItemSlot());
                             Item dropItem = p.getWorld().dropItem(p.getLocation(), new ItemStack(Material.SKULL_ITEM, 1, (short) 2));
                             dropItem.setPickupDelay(Integer.MAX_VALUE);
@@ -806,6 +866,11 @@ public class AbilityEvent implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.ENCHANTED_BOOK && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_PURPLE + "インフェルノスペル")) {
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
                 e.setCancelled(true);
                 if (checkUseMana(p, 20)){
                     removeMana(p, 20);
@@ -824,12 +889,11 @@ public class AbilityEvent implements Listener {
                                 double z = t*sin(theta);
                                 loc.add(x,y,z);
                                 loc.getWorld().spawnParticle(Particle.FLAME, loc, 0, 0, 0, 0, 1);
-                                for (Entity entity : loc.getChunk().getEntities()){
-                                    if (entity.getLocation().distance(loc) < 2) { //エンティティの半径1.5の範囲内にlocがあるか確認
-                                        if (entity != (p)) { //エンティティがクリックしたプレイヤーじゃないか
-                                            if (entity.getType().isAlive()) { //エンティティが生きているかどうか
-                                                Damageable d = (Damageable) entity;
-                                                d.damage(8, p);
+                                for (Player player : loc.getChunk().getWorld().getPlayers()){
+                                    if (player.getLocation().distance(loc) < 2) { //エンティティの半径1.5の範囲内にlocがあるか確認
+                                        if (player != (p)) { //エンティティがクリックしたプレイヤーじゃないか
+                                            if (Alive.contains(player)) { //エンティティが生きているかどうか
+                                                player.damage(8, p);
                                             }
                                         }
                                     }
@@ -851,57 +915,346 @@ public class AbilityEvent implements Listener {
     }
 
     @EventHandler
-    public void DamageByEntityEvent(EntityDamageByEntityEvent ev){
-        if (ev.getDamager() instanceof Player attacker){
-            if (DamageCharge.containsKey(attacker.getUniqueId())){
-                if (DamageCharge.get(attacker.getUniqueId()) > 0){
-                    attacker.getWorld().playSound(attacker.getLocation(), Sound.ENTITY_WITHER_BREAK_BLOCK, 1, 1);
-                    ev.setDamage(ev.getDamage() + DamageCharge.get(attacker.getUniqueId()));
-                    DamageCharge.remove(attacker.getUniqueId());
+    public void onUseZombiePower(PlayerInteractEvent e) {
+        Player p = e.getPlayer();
+        Action a = e.getAction();
+        if (!(e.getHand() == EquipmentSlot.HAND)) return;
+        if (a.equals(Action.RIGHT_CLICK_AIR) || a.equals(Action.RIGHT_CLICK_BLOCK)) {
+            ItemStack item = p.getInventory().getItemInMainHand();
+            ItemMeta itemMeta = item.getItemMeta();
+            if (item.getType() == Material.BLAZE_POWDER && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_GREEN + "ゾンビパワー")) {
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
+                e.setCancelled(true);
+                if (checkUseMana(p, 7)) {
+                    if (!(p.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() == Material.AIR)){
+                        removeMana(p, 7);
+                        Cooldown.setCooldown(p, getAbilityData().getInt("ZombiePower.cooltime"), "ZombiePower", p.getInventory().getHeldItemSlot());
+                        p.getWorld().playSound(p.getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_DOOR_WOOD, 5, 0);
+                        Location loc = p.getLocation();
+                        loc.setPitch(90);
+                        p.teleport(loc);
+                        Block middleBlock = p.getLocation().getBlock().getRelative(BlockFace.DOWN);
+                        int radius = 5;
+                        for (int x = radius; x >= -radius; x--) {
+                            for (int y = 1; y >= -1; y--) {
+                                for (int z = radius; z >= -radius; z--) {
+                                    Block block = middleBlock.getRelative(x, y, z);
+                                    if (block.getRelative(BlockFace.UP).getType() == Material.AIR){
+                                        FallingBlock fallingBlock = p.getWorld().spawnFallingBlock(block.getLocation().add(0, 1, 0), block.getType(), block.getData());
+                                        Location change = fallingBlock.getLocation().add(0, 2, 0).subtract(fallingBlock.getLocation());
+                                        fallingBlock.setVelocity(change.toVector().multiply(0.15));
+                                        fallingBlock.setDropItem(false);
+                                    }
+                                }
+                            }
+                        }
+                        for (Player other : Alive) {
+                            if (other.getWorld() == p.getWorld() && other.getLocation().distanceSquared(p.getLocation()) <= 25){
+                                if (!(other == p)) {
+                                    if (other.getWorld() == p.getWorld()) {
+                                        other.damage(7, p);
+                                        p.playSound(p.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
+                                        Location PlayerLocation = p.getLocation();
+                                        Location OtherLocation = other.getLocation();
+                                        Location change = OtherLocation.add(0, 1, 0).subtract(PlayerLocation);
+                                        other.setVelocity(change.toVector().multiply(1));
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        p.sendMessage(ChatColor.RED + "空中では使用できません。");
+                        p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    }
+                } else {
+                    p.sendMessage(ChatColor.RED + "マナが足りません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
                 }
             }
         }
-        if (ev.getEntity() instanceof Player victim){
-            if (Alive.contains(victim)){
-                if (((victim.getHealth() - ev.getDamage()) <= 0)){
-                    ev.setCancelled(true);
-                    if (ShapeMob.containsKey(victim.getUniqueId())){
-                        ShapeMob.remove(victim.getUniqueId());
-                        BeforeHealth.remove(victim.getUniqueId());
-                        victim.setOp(true);
-                        victim.performCommand("undis");
-                        victim.setOp(false);
-                    }
-                    if (GraveLocation.containsKey(victim)){
-                        victim.teleport(GraveLocation.get(victim));
-                        int maxhealth = 0;
-                        for (String type : getPlayerData().getStringList(victim.getUniqueId().toString() + ".customkit." +
-                                getPlayerData().getString(victim.getUniqueId().toString() + ".customkit.select") + ".type")) {
-                            maxhealth += getTypeData().getInt(type + ".health");
+    }
+
+    @EventHandler
+    public void onUseCreeperGrenade(PlayerInteractEvent e) {
+        Player p = e.getPlayer();
+        Action a = e.getAction();
+        if (!(e.getHand() == EquipmentSlot.HAND)) return;
+        if (a.equals(Action.RIGHT_CLICK_AIR) || a.equals(Action.RIGHT_CLICK_BLOCK)){
+            ItemStack item = p.getInventory().getItemInMainHand();
+            ItemMeta itemMeta = item.getItemMeta();
+            if (item.getType() == Material.TNT && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.GREEN + "クリーパーグレネード")){
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
+                e.setCancelled(true);
+                if (checkUseMana(p, 7)) {
+                    removeMana(p, 7);
+                    Cooldown.setCooldown(p, getAbilityData().getInt("CreeperGrenade.cooltime"), "CreeperGrenade", p.getInventory().getHeldItemSlot());
+                    // アビリティの処理
+                    p.playSound(p.getLocation(), Sound.ENTITY_SNOWBALL_THROW, 1, 1);
+                    Item dropItem = p.getWorld().dropItem(p.getLocation().add(0, 1, 0), new ItemStack(Material.TNT, 1));
+                    dropItem.setVelocity(p.getLocation().getDirection().multiply(1.3));
+                    dropItem.setCustomName("CreeperGrenade");
+                    dropItem.setPickupDelay(Integer.MAX_VALUE);
+                    new BukkitRunnable(){
+                        int delete = 0;
+                        @Override
+                        public void run(){
+                            if (delete >= 80){
+                                dropItem.remove();
+                                p.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, dropItem.getLocation(), 1, 0, 0, 0, 0.1);
+                                p.getWorld().playSound(dropItem.getLocation(), Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE, 3, 2);
+                                for (Player other : Alive) {
+                                    if (other.getWorld() == dropItem.getWorld() && other.getLocation().distanceSquared(dropItem.getLocation()) <= 9){
+                                        if (!(other == p)) {
+                                            if (other.getWorld() == dropItem.getWorld()) {
+                                                other.damage(6, p);
+                                                p.playSound(p.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
+                                                Location change = other.getLocation().add(0, 2, 0).subtract(other.getLocation());
+                                                other.setVelocity(change.toVector().multiply(0.15));
+                                            }
+                                        }
+                                    }
+                                }
+                                this.cancel();
+                            } else if (delete >= 30){
+                                p.getWorld().spawnParticle(Particle.SMOKE_NORMAL, dropItem.getLocation().add(0, 0.5, 0), 1, 0, 0, 0, 0);
+                                for (Player other : Alive) {
+                                    if (other.getWorld() == dropItem.getWorld() && other.getLocation().distanceSquared(dropItem.getLocation()) <= 4) {
+                                        if (!(other == p)) {
+                                            if (other.getWorld() == dropItem.getWorld()) {
+                                                p.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, dropItem.getLocation(), 1, 0, 0, 0, 0.1);
+                                                p.getWorld().playSound(dropItem.getLocation(), Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE, 3, 2);
+                                                p.playSound(p.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
+                                                Location change = other.getLocation().add(0, 2, 0).subtract(other.getLocation());
+                                                other.setVelocity(change.toVector().multiply(0.15));
+                                                other.damage(6, p);
+                                                dropItem.remove();
+                                                this.cancel();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            delete += 1;
                         }
-                        victim.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxhealth);
-                        victim.setHealth(1);
-                        victim.getWorld().playSound(GraveLocation.get(victim), Sound.ITEM_TOTEM_USE, 20, 1);
-                        victim.getWorld().spawnParticle(Particle.LAVA, victim.getLocation().add(0, 1, 0), 100, 1, 1, 1, 1);
-                        victim.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 220, 1, false));
-                        victim.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 50, 0, true));
-                        victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 50, 10, true));
-                        GraveLocation.remove(victim);
-                    } else {
-                        Mana.mana.remove(victim.getUniqueId());
-                        victim.setGameMode(GameMode.SPECTATOR);
-                        Alive.remove(victim);
-                        Spectator.add(victim);
-                        victim.getWorld().spawnParticle(Particle.SPIT, victim.getLocation().add(0, 1, 0), 50, 0.2, 0.5, 0.2, 0.1);
-                        victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 1.3F);
-                        victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 1F);
-                        victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 0.7F);
-                        if (Alive.size() == 1){
-                            Join.GameEnd("Normal");
+                    }.runTaskTimer(MagicStick.getPlugin(), 0, 1);
+                } else {
+                    p.sendMessage(ChatColor.RED + "マナが足りません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onUseBombJump(PlayerInteractEvent e){
+        Player p = e.getPlayer();
+        Action a = e.getAction();
+        if (!(e.getHand() == EquipmentSlot.HAND)) return;
+        if (a.equals(Action.RIGHT_CLICK_AIR) || a.equals(Action.RIGHT_CLICK_BLOCK)) {
+            ItemStack item = p.getInventory().getItemInMainHand();
+            ItemMeta itemMeta = item.getItemMeta();
+            if (item.getType() == Material.SULPHUR && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.GREEN + "ボムジャンプ")) {
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
+                e.setCancelled(true);
+                if (checkUseMana(p, 8)){
+                    removeMana(p, 8);
+                    Cooldown.setCooldown(p, getAbilityData().getInt("BombJump.cooltime"), "BombJump", p.getInventory().getHeldItemSlot());
+                    p.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, p.getLocation(), 5, 0, 0, 0, 2);
+                    p.getWorld().spawnParticle(Particle.CLOUD, p.getLocation(), 50, 0.2, 0.2, 0.2, 0.2);
+                    p.getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 3, 1);
+                    Location PlayerLocation = p.getLocation();
+                    Location PlayerAddLocation = p.getLocation().add(0, 5, 0);
+                    Location change = PlayerAddLocation.subtract(PlayerLocation);
+                    p.setVelocity(change.toVector().multiply(0.5));
+                } else {
+                    p.sendMessage(ChatColor.RED + "マナが足りません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onUseExplodePunch(EntityDamageByEntityEvent e){
+        if (e.getDamager() instanceof Player attacker){
+            if (e.getEntity() instanceof Player victim){
+                ItemStack item = attacker.getInventory().getItemInMainHand();
+                ItemMeta itemMeta = item.getItemMeta();
+                if (item.getType() == Material.COAL && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.GREEN + "エクスプロードパンチ")){
+                    if (ShapeMob.containsKey(attacker.getUniqueId())){
+                        attacker.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                        attacker.playSound(attacker.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                        return;
+                    }
+                    if (Alive.contains(victim)) {
+                        if (((victim.getHealth() - e.getDamage()) > 0)) {
+                            if (checkUseMana(attacker, 11)){
+                                removeMana(attacker, 11);
+                                Cooldown.setCooldown(attacker, getAbilityData().getInt("ExplodePunch.cooltime"), "ExplodePunch", attacker.getInventory().getHeldItemSlot());
+                                Location AttackerLocation = attacker.getLocation();
+                                Location VictimLocation = victim.getLocation();
+                                victim.getWorld().spawnParticle(Particle.CRIT_MAGIC, VictimLocation.add(0, 1.5, 0), 50, 0.2, 0.2, 0.2, 0.5);
+                                victim.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, VictimLocation.add(0, 1.5, 0), 1, 0, 0, 0, 0.1);
+                                victim.getWorld().playSound(VictimLocation.add(0, 1.5, 0), Sound.ENTITY_FIREWORK_LARGE_BLAST, 1, 0);
+                                victim.getWorld().playSound(VictimLocation.add(0, 1.5, 0), Sound.ENTITY_FIREWORK_LARGE_BLAST, 1, 0.7F);
+                                victim.getWorld().playSound(VictimLocation.add(0, 1.5, 0), Sound.ENTITY_FIREWORK_LARGE_BLAST, 1, 1);
+                                victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 3, true));
+                                victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 100, 6, true));
+                                victim.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 160, 0, true));
+                                victim.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 100, 0, true));
+                                Location change = VictimLocation.add(0, 1, 0).subtract(AttackerLocation);
+                                victim.setVelocity(change.toVector().multiply(1));
+                            } else {
+                                attacker.sendMessage(ChatColor.RED + "マナが足りません。");
+                                attacker.playSound(attacker.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                            }
                         }
                     }
-                } else if (BoneVeil.containsKey(victim)) {
-                    if (ev.getDamager() instanceof Player attacker){
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onUseCreeperExplosion(PlayerInteractEvent e){
+        Player p = e.getPlayer();
+        Action a = e.getAction();
+        if (!(e.getHand() == EquipmentSlot.HAND)) return;
+        if (a.equals(Action.RIGHT_CLICK_AIR) || a.equals(Action.RIGHT_CLICK_BLOCK)){
+            ItemStack item = p.getInventory().getItemInMainHand();
+            ItemMeta itemMeta = item.getItemMeta();
+            if (item.getType() == Material.SKULL_ITEM && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.GREEN + "クリーパーエクスプロージョン")){
+                if (ShapeMob.containsKey(p.getUniqueId())){
+                    p.sendMessage(ChatColor.RED + "変身中は使用できません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return;
+                }
+                e.setCancelled(true);
+                if (checkUseMana(p, 14)){
+                    removeMana(p, 14);
+                    Cooldown.setCooldown(p, getAbilityData().getInt("CreeperExplosion.cooltime"), "CreeperExplosion", p.getInventory().getHeldItemSlot());
+                    ShapeMob.put(p.getUniqueId(), "creeper");
+                    p.removePotionEffect(PotionEffectType.SPEED);
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 999999, 2, true));
+                    p.setOp(true);
+                    p.performCommand("dis creeper");
+                    p.setOp(false);
+                    new BukkitRunnable(){
+                        int ExplodeTimer = 4;
+                        @Override
+                        public void run() {
+                            if (!(ShapeMob.containsKey(p.getUniqueId()))){
+                                this.cancel();
+                            } else if (ExplodeTimer == 0){
+                                p.removePotionEffect(PotionEffectType.SPEED);
+                                p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 999999, 1, true));
+                                ShapeMob.remove(p.getUniqueId());
+                                p.setOp(true);
+                                p.performCommand("undis");
+                                p.setOp(false);
+                                p.getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 5, 0);
+                                p.getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 5, 0.7f);
+                                p.getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 5, 1);
+                                p.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, p.getLocation().add(0, 1, 0), 10, 1, 1, 1, 1);
+                                for (Player other : Alive){
+                                    if (other.getWorld() == p.getWorld() && other.getLocation().distanceSquared(p.getLocation()) <= 16){
+                                        if (other != p) {
+                                            if (other.getWorld() == p.getWorld()) {
+                                                Location PlayerLocation = p.getLocation();
+                                                Location OtherLocation = other.getLocation();
+                                                Location change = OtherLocation.add(0, 1, 0).subtract(PlayerLocation);
+                                                other.setVelocity(change.toVector().multiply(2));
+                                                other.damage(18, p);
+                                            }
+                                        }
+                                    }
+                                }
+                                this.cancel();
+                            } else {
+                                p.getWorld().spawnParticle(Particle.VILLAGER_ANGRY, p.getLocation(), 50, 0.5, 0.5, 0.5, 1);
+                                p.getWorld().playSound(p.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 5, 1);
+                                ExplodeTimer--;
+                            }
+                        }
+                    }.runTaskTimer(MagicStick.getPlugin(), 0, 20);
+                } else {
+                    p.sendMessage(ChatColor.RED + "マナが足りません。");
+                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void BlockPlaceEvent(EntityChangeBlockEvent e){
+        if (e.getEntityType() == EntityType.FALLING_BLOCK) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void DamageByEntityEvent(EntityDamageByEntityEvent ev){
+        if (ev.getDamager() instanceof Player attacker){
+            if (ev.getEntity() instanceof Player victim){
+                if (DamageCharge.containsKey(attacker.getUniqueId())){
+                    if (DamageCharge.get(attacker.getUniqueId()) > 0){
+                        attacker.getWorld().playSound(attacker.getLocation(), Sound.ENTITY_WITHER_BREAK_BLOCK, 1, 1);
+                        ev.setDamage(ev.getDamage() + DamageCharge.get(attacker.getUniqueId()));
+                        DamageCharge.remove(attacker.getUniqueId());
+                    }
+                }
+                if (Alive.contains(victim)){
+                    if (((victim.getHealth() - ev.getDamage()) <= 0)){
+                        ev.setCancelled(true);
+                        if (ShapeMob.containsKey(victim.getUniqueId())){
+                            ShapeMob.remove(victim.getUniqueId());
+                            BeforeHealth.remove(victim.getUniqueId());
+                            victim.setOp(true);
+                            victim.performCommand("undis");
+                            victim.setOp(false);
+                        }
+                        if (GraveLocation.containsKey(victim)){
+                            victim.teleport(GraveLocation.get(victim));
+                            int maxhealth = 0;
+                            for (String type : getPlayerData().getStringList(victim.getUniqueId().toString() + ".customkit." +
+                                    getPlayerData().getString(victim.getUniqueId().toString() + ".customkit.select") + ".type")) {
+                                maxhealth += getTypeData().getInt(type + ".health");
+                            }
+                            victim.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxhealth);
+                            victim.setHealth(1);
+                            victim.getWorld().playSound(GraveLocation.get(victim), Sound.ITEM_TOTEM_USE, 20, 1);
+                            victim.getWorld().spawnParticle(Particle.LAVA, victim.getLocation().add(0, 1, 0), 100, 1, 1, 1, 1);
+                            victim.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 220, 1, false));
+                            victim.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 50, 0, true));
+                            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 50, 10, true));
+                            GraveLocation.remove(victim);
+                        } else {
+                            Mana.mana.remove(victim.getUniqueId());
+                            victim.setGameMode(GameMode.SPECTATOR);
+                            Alive.remove(victim);
+                            Spectator.add(victim);
+                            String killEffect = getPlayerData().getString(victim.getUniqueId().toString() + ".killeffect");
+                            KillEffect.Effect(victim, killEffect);
+                            victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 1.3F);
+                            victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 1F);
+                            victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 0.7F);
+                            if (Alive.size() == 1){
+                                Join.GameEnd("Normal");
+                            }
+                        }
+                    } else if (BoneVeil.containsKey(victim)) {
                         if (!(BoneVeil.containsKey(attacker))){
                             ev.setDamage(ev.getFinalDamage() / 2);
                             victim.getWorld().playSound(victim.getLocation(), Sound.ENTITY_SKELETON_DEATH, 5, 1.5F);
@@ -924,12 +1277,8 @@ public class AbilityEvent implements Listener {
                             Damageable d = (Damageable) ev.getDamager();
                             d.damage((ev.getDamage()), victim);
                         }
-                    }
-                } else {
-                    String select = getPlayerData().getString(victim.getUniqueId().toString() + ".customkit.select");
-                    List<String> type = getPlayerData().getStringList(victim.getUniqueId().toString() + ".customkit." + select + ".type");
-                    for (String pt : type){
-                        if (pt.equalsIgnoreCase("skeleton")){
+                    } else {
+                        if (TypeEvent.CheckType(victim, "skeleton")){
                             if (ev.getFinalDamage() >= 8.0){
                                 victim.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 5 * 20, 0, true));
                                 victim.sendMessage(ChatColor.WHITE + "パッシブ発動: " + ChatColor.GRAY + "スケルトン");
@@ -937,10 +1286,10 @@ public class AbilityEvent implements Listener {
                         }
                     }
                 }
-            }
-            if (mana.containsKey(victim.getUniqueId())){
-                int damage = (int) ev.getFinalDamage();
-                addMana(victim, damage);
+                if (mana.containsKey(victim.getUniqueId())){
+                    int damage = (int) ev.getFinalDamage();
+                    addMana(victim, damage);
+                }
             }
         }
     }
@@ -976,13 +1325,13 @@ public class AbilityEvent implements Listener {
         }
     }
 
-    @EventHandler
-    public void PlayerDoNotMove(PlayerMoveEvent event){
-        Player player = event.getPlayer();
-        if (DoNotMove.containsKey(player)){
-            player.teleport(DoNotMove.get(player));
-        }
-    }
+//    @EventHandler
+//    public void PlayerDoNotMove(PlayerMoveEvent event){
+//        Player player = event.getPlayer();
+//        if (DoNotMove.containsKey(player)){
+//            player.teleport(DoNotMove.get(player));
+//        }
+//    }
 
     @EventHandler
     public void DropItemEvent(PlayerDropItemEvent e){
