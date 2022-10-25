@@ -13,3 +13,5 @@ commands:
     description: テスト
   crate:
     description: ガチャブロックの付与
+  hub:
+    description: ロビーにテレポート

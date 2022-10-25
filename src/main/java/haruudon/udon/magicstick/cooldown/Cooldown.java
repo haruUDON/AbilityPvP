@@ -35,7 +35,7 @@ public class Cooldown {
                                 sec -= 1;
                                 Cooldowns.get(uuid).put(ability, new SecSlot(sec, slot));
                                 if (sec % 20 == 0) {
-                                    ItemStack abilityItem = getAbilityData().getItemStack(ability + ".item1");
+                                    ItemStack abilityItem = getData("ability").getItemStack(ability + ".item1");
                                     String abilityName = abilityItem.getItemMeta().getDisplayName();
                                     ItemStack item = new ItemStack(Material.INK_SACK, sec / 20, (short) 8);
                                     ItemMeta meta = item.getItemMeta();
@@ -44,7 +44,7 @@ public class Cooldown {
                                     loop.getInventory().setItem(Cooldowns.get(uuid).get(ability).slot(), item);
                                 }
                             } else if (Cooldowns.get(uuid).get(ability).sec() == 0) {
-                                ItemStack abilityItem = getAbilityData().getItemStack(ability + ".item1");
+                                ItemStack abilityItem = getData("ability").getItemStack(ability + ".item1");
                                 loop.getInventory().setItem(Cooldowns.get(uuid).get(ability).slot(), abilityItem);
                                 removed.add(ability);
                                 Cooldowns.get(uuid).remove(ability);
@@ -69,7 +69,7 @@ public class Cooldown {
         if (!(Cooldowns.containsKey(p.getUniqueId()))) Cooldowns.put(p.getUniqueId(), new HashMap<>());
         DownAbility.get(p.getUniqueId()).add(ability);
         Cooldowns.get(p.getUniqueId()).put(ability, new SecSlot((sec * 20) - (reduction * 20), slot));
-        ItemStack abilityItem = getAbilityData().getItemStack(ability + ".item1");
+        ItemStack abilityItem = getData("ability").getItemStack(ability + ".item1");
         String abilityName = abilityItem.getItemMeta().getDisplayName();
         ItemStack item = new ItemStack(Material.INK_SACK, sec - reduction, (short) 8);
         ItemMeta meta = item.getItemMeta();

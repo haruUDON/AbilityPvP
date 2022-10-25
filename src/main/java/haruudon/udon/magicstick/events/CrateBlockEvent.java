@@ -22,7 +22,7 @@ public class CrateBlockEvent implements Listener {
                 p.getInventory().setItem(p.getInventory().getHeldItemSlot(), null);
                 p.sendMessage(ChatColor.GREEN + "クレートを生成しました。");
                 Location loc = e.getBlockPlaced().getLocation();
-                MagicStick.getBlockData().set("Crate", loc);
+                MagicStick.getData("block").set("Crate", loc);
                 MagicStick.saveBlockData();
             }
         }
@@ -35,7 +35,7 @@ public class CrateBlockEvent implements Listener {
         if (!(e.getHand() == EquipmentSlot.HAND)) return;
         if (a.equals(Action.RIGHT_CLICK_BLOCK)){
             if (e.getClickedBlock().getType() == Material.ENCHANTMENT_TABLE){
-                Location loc1 = (Location) MagicStick.getBlockData().get("Crate");
+                Location loc1 = (Location) MagicStick.getData("block").get("Crate");
                 Location loc2 = e.getClickedBlock().getLocation();
                 if (loc1.equals(loc2)){
                     e.setCancelled(true);

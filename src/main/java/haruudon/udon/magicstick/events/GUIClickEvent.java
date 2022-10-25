@@ -1,6 +1,8 @@
 package haruudon.udon.magicstick.events;
 
+import haruudon.udon.magicstick.CoinAndMagicOre;
 import haruudon.udon.magicstick.GUIManager;
+import haruudon.udon.magicstick.Gacha;
 import haruudon.udon.magicstick.Join;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -9,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -44,8 +47,8 @@ public class GUIClickEvent implements Listener {
                     if (e.getSlot() == (9 + (2 * i))){
                         List<String> th = new ArrayList<>();
                         th.add("first"); th.add("second"); th.add("third");
-                        if (getPlayerData().getBoolean(uuid + ".customkit." + th.get(i - 1) + ".use")){
-                            getPlayerData().set(uuid + ".customkit.select", th.get(i - 1));
+                        if (getData("player").getBoolean(uuid + ".customkit." + th.get(i - 1) + ".use")){
+                            getData("player").set(uuid + ".customkit.select", th.get(i - 1));
                             savePlayerData();
                             p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             p.closeInventory();
@@ -69,12 +72,12 @@ public class GUIClickEvent implements Listener {
                     if (now.get(p.getUniqueId()).equals("first")) i += 1;
                     if (now.get(p.getUniqueId()).equals("second")) i += 2;
                     if (now.get(p.getUniqueId()).equals("third")) i += 3;
-                    getPlayerData().set(p.getUniqueId().toString() + ".customkit." + now.get(p.getUniqueId()) + ".name", "§fカスタムキット" + i);
-                    getPlayerData().set(p.getUniqueId().toString() + ".customkit." + now.get(p.getUniqueId()) + ".use", false);
-                    getPlayerData().set(p.getUniqueId().toString() + ".customkit." + now.get(p.getUniqueId()) + ".cost", 0);
-                    getPlayerData().set(p.getUniqueId().toString() + ".customkit." + now.get(p.getUniqueId()) + ".type", Arrays.asList(listOfType));
-                    getPlayerData().set(p.getUniqueId().toString() + ".customkit." + now.get(p.getUniqueId()) + ".ability", Arrays.asList(listOfAbility));
-                    getPlayerData().set(p.getUniqueId().toString() + ".customkit." + now.get(p.getUniqueId()) + ".weapon", "NullWeapon");
+                    getData("player").set(p.getUniqueId().toString() + ".customkit." + now.get(p.getUniqueId()) + ".name", "§fカスタムキット" + i);
+                    getData("player").set(p.getUniqueId().toString() + ".customkit." + now.get(p.getUniqueId()) + ".use", false);
+                    getData("player").set(p.getUniqueId().toString() + ".customkit." + now.get(p.getUniqueId()) + ".cost", 0);
+                    getData("player").set(p.getUniqueId().toString() + ".customkit." + now.get(p.getUniqueId()) + ".type", Arrays.asList(listOfType));
+                    getData("player").set(p.getUniqueId().toString() + ".customkit." + now.get(p.getUniqueId()) + ".ability", Arrays.asList(listOfAbility));
+                    getData("player").set(p.getUniqueId().toString() + ".customkit." + now.get(p.getUniqueId()) + ".weapon", "NullWeapon");
                     savePlayerData();
                     GUIManager.MainSetAbilityMenu(p);
                 } else if (e.getSlot() == 6){
@@ -87,59 +90,59 @@ public class GUIClickEvent implements Listener {
                 if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + s + "をセットする")){
                     e.setCancelled(true);
                     if (e.getSlot() == 0){
-                        List<String> type = getPlayerData().getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".type");
-                        List<String> ability = getPlayerData().getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability");
-                        int cost = getPlayerData().getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
+                        List<String> type = getData("player").getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".type");
+                        List<String> ability = getData("player").getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability");
+                        int cost = getData("player").getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
                         for (String a : ability){
                             if (!(a.equalsIgnoreCase("NullAbility"))){
-                                if (getAbilityData().getString(a + ".rarity").equalsIgnoreCase("legendary"))
+                                if (getData("ability").getString(a + ".rarity").equalsIgnoreCase("legendary"))
                                     cost -= 6;
-                                if (getAbilityData().getString(a + ".rarity").equalsIgnoreCase("epic"))
+                                if (getData("ability").getString(a + ".rarity").equalsIgnoreCase("epic"))
                                     cost -= 4;
-                                if (getAbilityData().getString(a + ".rarity").equalsIgnoreCase("rare"))
+                                if (getData("ability").getString(a + ".rarity").equalsIgnoreCase("rare"))
                                     cost -= 3;
-                                if (getAbilityData().getString(a + ".rarity").equalsIgnoreCase("common"))
+                                if (getData("ability").getString(a + ".rarity").equalsIgnoreCase("common"))
                                     cost -= 2;
                             }
                         }
                         type.set(list1.indexOf(s), "NullType");
                         String[] listOfAbility = {"NullAbility", "NullAbility", "NullAbility", "NullAbility"};
-                        getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability", Arrays.asList(listOfAbility));
-                        getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
-                        getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".type", type);
-                        getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".use", false);
+                        getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability", Arrays.asList(listOfAbility));
+                        getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
+                        getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".type", type);
+                        getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".use", false);
                         savePlayerData();
                         GUIManager.SetAbilityMenu(p);
                     } else if (e.getSlot() == 31){
                         GUIManager.SetAbilityMenu(p);
                     } else {
-                        for (String alltype : getTypeData().getStringList("All")){
-                            ItemStack item = getTypeData().getItemStack(alltype + ".item1");
+                        for (String allType : getData("type").getStringList("All")){
+                            ItemStack item = getData("type").getItemStack(allType + ".item1");
                             String itemname = item.getItemMeta().getDisplayName();
                             if (e.getCurrentItem().getItemMeta().getDisplayName().equalsIgnoreCase(itemname)){
-                                List<String> type = getPlayerData().getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".type");
-                                type.set(list1.indexOf(s), alltype);
+                                List<String> type = getData("player").getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".type");
+                                type.set(list1.indexOf(s), allType);
                                 for (String t : type){
-                                    if (!(alltype.equalsIgnoreCase(t))) {
-                                        List<String> ability = getPlayerData().getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability");
-                                        int cost = getPlayerData().getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
+                                    if (!(allType.equalsIgnoreCase(t))) {
+                                        List<String> ability = getData("player").getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability");
+                                        int cost = getData("player").getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
                                         for (String a : ability) {
                                             if (!(a.equalsIgnoreCase("NullAbility"))) {
-                                                if (getAbilityData().getString(a + ".rarity").equalsIgnoreCase("legendary"))
+                                                if (getData("ability").getString(a + ".rarity").equalsIgnoreCase("legendary"))
                                                     cost -= 6;
-                                                if (getAbilityData().getString(a + ".rarity").equalsIgnoreCase("epic"))
+                                                if (getData("ability").getString(a + ".rarity").equalsIgnoreCase("epic"))
                                                     cost -= 4;
-                                                if (getAbilityData().getString(a + ".rarity").equalsIgnoreCase("rare"))
+                                                if (getData("ability").getString(a + ".rarity").equalsIgnoreCase("rare"))
                                                     cost -= 3;
-                                                if (getAbilityData().getString(a + ".rarity").equalsIgnoreCase("common"))
+                                                if (getData("ability").getString(a + ".rarity").equalsIgnoreCase("common"))
                                                     cost -= 2;
                                             }
                                         }
                                         String[] listOfAbility = {"NullAbility", "NullAbility", "NullAbility", "NullAbility"};
-                                        getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability", Arrays.asList(listOfAbility));
-                                        getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
-                                        getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".type", type);
-                                        getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".use", false);
+                                        getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability", Arrays.asList(listOfAbility));
+                                        getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
+                                        getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".type", type);
+                                        getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".use", false);
                                         savePlayerData();
                                         GUIManager.SetAbilityMenu(p);
                                     }
@@ -155,51 +158,51 @@ public class GUIClickEvent implements Listener {
                 if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "タイプ1" + "をセットする")){
                     e.setCancelled(true);
                     if (e.getCurrentItem().getType() == Material.THIN_GLASS){
-                        List<String> ability = getPlayerData().getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability");
-                        int cost = getPlayerData().getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
-                        if (getAbilityData().getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("legendary"))
+                        List<String> ability = getData("player").getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability");
+                        int cost = getData("player").getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
+                        if (getData("ability").getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("legendary"))
                             cost -= 6;
-                        if (getAbilityData().getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("epic"))
+                        if (getData("ability").getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("epic"))
                             cost -= 4;
-                        if (getAbilityData().getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("rare"))
+                        if (getData("ability").getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("rare"))
                             cost -= 3;
-                        if (getAbilityData().getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("common"))
+                        if (getData("ability").getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("common"))
                             cost -= 2;
                         ability.set(list2.indexOf(s), "NullAbility");
-                        getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability", ability);
-                        getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".use", false);
-                        getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
+                        getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability", ability);
+                        getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".use", false);
+                        getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
                         savePlayerData();
                         GUIManager.SetAbilityMenu(p);
                     } else if (e.getSlot() == 8){
                         GUIManager.SetAbilityMenu(p);
                     } else {
-                        for (String allAbility : getAbilityData().getStringList("All")){
-                            ItemStack item = getAbilityData().getItemStack(allAbility + ".item1");
+                        for (String allAbility : getData("ability").getStringList("All")){
+                            ItemStack item = getData("ability").getItemStack(allAbility + ".item1");
                             String itemName = item.getItemMeta().getDisplayName();
                             if (e.getCurrentItem().getItemMeta().getDisplayName().equalsIgnoreCase(itemName)) {
                                 int addCost = 0;
-                                int cost = getPlayerData().getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
-                                List<String> ability = getPlayerData().getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability");
-                                if (getAbilityData().getString(allAbility + ".rarity").equalsIgnoreCase("legendary")) addCost += 6;
-                                if (getAbilityData().getString(allAbility + ".rarity").equalsIgnoreCase("epic")) addCost += 4;
-                                if (getAbilityData().getString(allAbility + ".rarity").equalsIgnoreCase("rare")) addCost += 3;
-                                if (getAbilityData().getString(allAbility + ".rarity").equalsIgnoreCase("common")) addCost += 2;
+                                int cost = getData("player").getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
+                                List<String> ability = getData("player").getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability");
+                                if (getData("ability").getString(allAbility + ".rarity").equalsIgnoreCase("legendary")) addCost += 6;
+                                if (getData("ability").getString(allAbility + ".rarity").equalsIgnoreCase("epic")) addCost += 4;
+                                if (getData("ability").getString(allAbility + ".rarity").equalsIgnoreCase("rare")) addCost += 3;
+                                if (getData("ability").getString(allAbility + ".rarity").equalsIgnoreCase("common")) addCost += 2;
                                 if (!(ability.get(list2.indexOf(s)).equalsIgnoreCase("NullAbility"))){
                                     if (!(ability.contains(allAbility))){
-                                        if (getAbilityData().getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("legendary"))
+                                        if (getData("ability").getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("legendary"))
                                             cost -= 6;
-                                        if (getAbilityData().getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("epic"))
+                                        if (getData("ability").getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("epic"))
                                             cost -= 4;
-                                        if (getAbilityData().getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("rare"))
+                                        if (getData("ability").getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("rare"))
                                             cost -= 3;
-                                        if (getAbilityData().getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("common"))
+                                        if (getData("ability").getString(ability.get(list2.indexOf(s)) + ".rarity").equalsIgnoreCase("common"))
                                             cost -= 2;
                                         if (cost <= (18 - addCost)) { //コストが余ってるなら
                                             ability.set(list2.indexOf(s), allAbility);
                                             cost += addCost;
-                                            getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability", ability);
-                                            getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
+                                            getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability", ability);
+                                            getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
                                             savePlayerData();
                                             GUIManager.SetAbilityMenu(p);
                                         }
@@ -209,8 +212,8 @@ public class GUIClickEvent implements Listener {
                                         if (cost <= (18 - addCost)) { //コストが余ってるなら
                                             ability.set(list2.indexOf(s), allAbility);
                                             cost += addCost;
-                                            getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability", ability);
-                                            getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
+                                            getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability", ability);
+                                            getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
                                             savePlayerData();
                                             GUIManager.SetAbilityMenu(p);
                                         }
@@ -225,51 +228,51 @@ public class GUIClickEvent implements Listener {
             if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "武器をセットする")){
                 e.setCancelled(true);
                 if (e.getCurrentItem().getType() == Material.GLASS){
-                    String weapon = getPlayerData().getString(uuid + ".customkit." + now.get(p.getUniqueId()) + ".weapon");
-                    int cost = getPlayerData().getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
-                    if (getWeaponData().getString(weapon + ".rarity").equalsIgnoreCase("legendary"))
+                    String weapon = getData("player").getString(uuid + ".customkit." + now.get(p.getUniqueId()) + ".weapon");
+                    int cost = getData("player").getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
+                    if (getData("weapon").getString(weapon + ".rarity").equalsIgnoreCase("legendary"))
                         cost -= 6;
-                    if (getWeaponData().getString(weapon + ".rarity").equalsIgnoreCase("epic"))
+                    if (getData("weapon").getString(weapon + ".rarity").equalsIgnoreCase("epic"))
                         cost -= 4;
-                    if (getWeaponData().getString(weapon + ".rarity").equalsIgnoreCase("rare"))
+                    if (getData("weapon").getString(weapon + ".rarity").equalsIgnoreCase("rare"))
                         cost -= 3;
-                    if (getWeaponData().getString(weapon + ".rarity").equalsIgnoreCase("common"))
+                    if (getData("weapon").getString(weapon + ".rarity").equalsIgnoreCase("common"))
                         cost -= 2;
                     String newWeapon = "NullWeapon";
-                    getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".weapon", newWeapon);
-                    getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".use", false);
-                    getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
+                    getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".weapon", newWeapon);
+                    getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".use", false);
+                    getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
                     savePlayerData();
                     GUIManager.SetAbilityMenu(p);
                 } else if (e.getSlot() == 8){
                     GUIManager.SetAbilityMenu(p);
                 } else {
-                    for (String allweapon : getWeaponData().getStringList("All")){
-                        ItemStack item = getWeaponData().getItemStack(allweapon + ".item1");
+                    for (String allWeapon : getData("weapon").getStringList("All")){
+                        ItemStack item = getData("weapon").getItemStack(allWeapon + ".item1");
                         String itemname = item.getItemMeta().getDisplayName();
                         if (e.getCurrentItem().getItemMeta().getDisplayName().equalsIgnoreCase(itemname)){
-                            int addcost = 0;
-                            int cost = getPlayerData().getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
-                            String weapon = getPlayerData().getString(uuid + ".customkit." + now.get(p.getUniqueId()) + ".weapon");
-                            if (getWeaponData().getString(allweapon + ".rarity").equalsIgnoreCase("legendary")) addcost += 6;
-                            if (getWeaponData().getString(allweapon + ".rarity").equalsIgnoreCase("epic")) addcost += 4;
-                            if (getWeaponData().getString(allweapon + ".rarity").equalsIgnoreCase("rare")) addcost += 3;
-                            if (getWeaponData().getString(allweapon + ".rarity").equalsIgnoreCase("common")) addcost += 2;
+                            int addCost = 0;
+                            int cost = getData("player").getInt(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost");
+                            String weapon = getData("player").getString(uuid + ".customkit." + now.get(p.getUniqueId()) + ".weapon");
+                            if (getData("weapon").getString(allWeapon + ".rarity").equalsIgnoreCase("legendary")) addCost += 6;
+                            if (getData("weapon").getString(allWeapon + ".rarity").equalsIgnoreCase("epic")) addCost += 4;
+                            if (getData("weapon").getString(allWeapon + ".rarity").equalsIgnoreCase("rare")) addCost += 3;
+                            if (getData("weapon").getString(allWeapon + ".rarity").equalsIgnoreCase("common")) addCost += 2;
                             //コストが余ってるなら
                             if (!weapon.equalsIgnoreCase("NullWeapon")){
-                                if (getWeaponData().getString(weapon + ".rarity").equalsIgnoreCase("legendary"))
+                                if (getData("weapon").getString(weapon + ".rarity").equalsIgnoreCase("legendary"))
                                     cost -= 6;
-                                if (getWeaponData().getString(weapon + ".rarity").equalsIgnoreCase("epic"))
+                                if (getData("weapon").getString(weapon + ".rarity").equalsIgnoreCase("epic"))
                                     cost -= 4;
-                                if (getWeaponData().getString(weapon + ".rarity").equalsIgnoreCase("rare"))
+                                if (getData("weapon").getString(weapon + ".rarity").equalsIgnoreCase("rare"))
                                     cost -= 3;
-                                if (getWeaponData().getString(weapon + ".rarity").equalsIgnoreCase("common"))
+                                if (getData("weapon").getString(weapon + ".rarity").equalsIgnoreCase("common"))
                                     cost -= 2;
                             }
-                            if (cost <= (18 - addcost)) { //コストが余ってるなら
-                                cost += addcost;
-                                getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".weapon", allweapon);
-                                getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
+                            if (cost <= (18 - addCost)) { //コストが余ってるなら
+                                cost += addCost;
+                                getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".weapon", allWeapon);
+                                getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".cost", cost);
                                 savePlayerData();
                                 GUIManager.SetAbilityMenu(p);
                             } else {
@@ -278,7 +281,7 @@ public class GUIClickEvent implements Listener {
                         }
                     }
                 }
-            } else if (e.getClickedInventory().getTitle().equalsIgnoreCase(getPlayerData().getString(uuid + ".customkit." + now.get(p.getUniqueId()) + ".name"))){
+            } else if (e.getClickedInventory().getTitle().equalsIgnoreCase(getData("player").getString(uuid + ".customkit." + now.get(p.getUniqueId()) + ".name"))){
                 switch (e.getSlot()){
                     case 0: //リセット
                         GUIManager.CheckYesOrNo(p, "本当に初期化しますか？");
@@ -310,9 +313,9 @@ public class GUIClickEvent implements Listener {
                         GUIManager.MainSetAbilityMenu(p);
                         break;
                     case 35: //保存
-                        List<String> playerType = getPlayerData().getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".type");
-                        List<String> playerAbility = getPlayerData().getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability");
-                        String playerWeapon = getPlayerData().getString(uuid + ".customkit." + now.get(p.getUniqueId()) + ".weapon");
+                        List<String> playerType = getData("player").getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".type");
+                        List<String> playerAbility = getData("player").getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability");
+                        String playerWeapon = getData("player").getString(uuid + ".customkit." + now.get(p.getUniqueId()) + ".weapon");
                         if (!(playerType.get(0).equalsIgnoreCase("NullType"))
                                 && !(playerType.get(1).equalsIgnoreCase("NullType"))
                                 && !(playerAbility.get(0).equalsIgnoreCase("NullAbility"))
@@ -320,7 +323,7 @@ public class GUIClickEvent implements Listener {
                                 && !(playerAbility.get(2).equalsIgnoreCase("NullAbility"))
                                 && !(playerAbility.get(3).equalsIgnoreCase("NullAbility"))
                                 && !(playerWeapon.equalsIgnoreCase("NullWeapon"))){
-                            getPlayerData().set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".use", true);
+                            getData("player").set(uuid + ".customkit." + now.get(p.getUniqueId()) + ".use", true);
                             savePlayerData();
                             GUIManager.MainSetAbilityMenu(p);
                             p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_USE, 1, 1);
@@ -330,19 +333,24 @@ public class GUIClickEvent implements Listener {
                         break;
                 }
                 e.setCancelled(true);
-            } else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "キルエフェクトをセットする")){
+            } else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "キルエフェクト")){
                 e.setCancelled(true);
                 if (e.getSlot() == 31){
                     GUIManager.SelectDecoration(p);
                 } else {
-                    for (String allKillEffect : getKillEffectData().getStringList("All")) {
-                        ItemStack item = getWeaponData().getItemStack(allKillEffect + ".item1");
+                    for (String a : getData("killeffect").getStringList("All")) {
+                        ItemStack item = getData("killeffect").getItemStack(a + ".item1");
                         String itemname = item.getItemMeta().getDisplayName();
                         if (e.getCurrentItem().getItemMeta().getDisplayName().equalsIgnoreCase(itemname)){
-                            if (getPlayerData().getStringList(uuid + ".have.killeffect").contains(allKillEffect)){
-                                getPlayerData().set(uuid + ".killeffect", allKillEffect);
-                                p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-                                GUIManager.SelectKillEffect(p);
+                            if (getData("player").getStringList(uuid + ".have.killeffect").contains(a)){
+                                getData("player").set(uuid + ".killeffect", a);
+                                savePlayerData();
+                                p.playSound(p.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
+                                Inventory inventory = e.getClickedInventory();
+                                GUIManager.LoadKillEffectMenu(inventory, p);
+                                p.updateInventory();
+                            } else {
+                                p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
                             }
                         }
                     }
@@ -358,6 +366,68 @@ public class GUIClickEvent implements Listener {
                 e.setCancelled(true);
                 if (e.getSlot() == 31){
                     p.closeInventory();
+                } else if (e.getSlot() == 11){
+                    GUIManager.OpenCrateCount(p);
+                    Gacha.NowOpenGUI.put(p, "killeffect");
+                }
+            } else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "引く回数")){
+                e.setCancelled(true);
+                if (e.getCurrentItem().getType() == Material.CHEST){
+                    if (CoinAndMagicOre.checkUseMagicOre(p, 10)){
+                        Gacha.openGacha(p, 1);
+                        CoinAndMagicOre.removeMagicOre(p, 10);
+                    } else {
+                        p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    }
+                } else if (e.getCurrentItem().getType() == Material.ENDER_CHEST){
+                    if (CoinAndMagicOre.checkUseMagicOre(p, 40)){
+                        Gacha.openGacha(p, 5);
+                        CoinAndMagicOre.removeMagicOre(p, 40);
+                    } else {
+                        p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    }
+                } else if (e.getCurrentItem().getType() == Material.BARRIER){
+                    GUIManager.OpenCrateMenu(p);
+                }
+            } else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "結果")){
+                e.setCancelled(true);
+                List<Material> materialList = new ArrayList<>();
+                materialList.add(Material.GRAY_GLAZED_TERRACOTTA);
+                materialList.add(Material.BLUE_GLAZED_TERRACOTTA);
+                materialList.add(Material.PURPLE_GLAZED_TERRACOTTA);
+                materialList.add(Material.YELLOW_GLAZED_TERRACOTTA);
+                for (Material m : materialList){
+                    if (e.getCurrentItem().getType() == m){
+                        ItemStack item = null;
+                        ArrayList<Integer> slot = new ArrayList<>();
+                        slot.add(13);
+                        slot.add(3);
+                        slot.add(5);
+                        slot.add(11);
+                        slot.add(15);
+                        if (m == Material.GRAY_GLAZED_TERRACOTTA) p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_BLAST, 1, 1);
+                        if (m == Material.BLUE_GLAZED_TERRACOTTA) p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_LAUNCH, 1, 1);
+                        if (m == Material.PURPLE_GLAZED_TERRACOTTA) p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 1);
+                        if (m == Material.YELLOW_GLAZED_TERRACOTTA) p.playSound(p.getLocation(), Sound.ENTITY_WITHER_SPAWN, 1, 1);
+                        for (int i : slot){
+                            if (e.getSlot() == i){
+                                if (Gacha.GachaResultItem.get(p).get(slot.indexOf(i)).equals("common")){
+                                    item = getData("item").getItemStack("MagicDustCommon");
+                                } else if (Gacha.GachaResultItem.get(p).get(slot.indexOf(i)).equals("rare")){
+                                    item = getData("item").getItemStack("MagicDustRare");
+                                } else if (Gacha.GachaResultItem.get(p).get(slot.indexOf(i)).equals("epic")){
+                                    item = getData("item").getItemStack("MagicDustEpic");
+                                } else if (Gacha.GachaResultItem.get(p).get(slot.indexOf(i)).equals("legendary")){
+                                    item = getData("item").getItemStack("BigMagicDust");
+                                } else {
+                                    item = getData("killeffect").getItemStack(Gacha.GachaResultItem.get(p).get(slot.indexOf(i)) + ".item1");
+                                }
+                            }
+                        }
+                        Inventory inventory = e.getClickedInventory();
+                        Gacha.loadGachaResult(inventory, item, e.getSlot());
+                        p.updateInventory();
+                    }
                 }
             } else {
                 if (!(p.isOp())){

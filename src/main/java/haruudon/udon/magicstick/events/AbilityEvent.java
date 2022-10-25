@@ -28,13 +28,12 @@ import java.util.UUID;
 
 import static haruudon.udon.magicstick.Join.*;
 import static haruudon.udon.magicstick.MagicStick.*;
-import static haruudon.udon.magicstick.MagicStick.getTypeData;
 import static haruudon.udon.magicstick.Mana.*;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
 public class AbilityEvent implements Listener {
-    HashMap<Player, Location> lastlocation = new HashMap<>();
+    HashMap<Player, Location> lastLocation = new HashMap<>();
 
     @EventHandler
     public void onUseRewindTime(PlayerInteractEvent e) {
@@ -53,14 +52,13 @@ public class AbilityEvent implements Listener {
                 e.setCancelled(true);
                 if (checkUseMana(p, 7)) {
                     removeMana(p, 7);
-                    lastlocation.put(p, p.getLocation());
-                    // [Player:haruUDON, Location:x10 y20 z30][][][][][][][][][]
+                    lastLocation.put(p, p.getLocation());
                     p.playSound(p.getLocation(), Sound.BLOCK_END_PORTAL_FRAME_FILL, 1, 0);
                     p.getInventory().setItem(p.getInventory().getHeldItemSlot(), null);
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            p.getInventory().setItem(p.getInventory().getHeldItemSlot(), getAbilityData().getItemStack("RewindTime.item2"));
+                            p.getInventory().setItem(p.getInventory().getHeldItemSlot(), getData("ability").getItemStack("RewindTime.item2"));
                         }
                     }.runTaskLater(MagicStick.getPlugin(), 1);
                 } else {
@@ -69,9 +67,8 @@ public class AbilityEvent implements Listener {
                 }
             } else if (item.getType() == Material.WATCH && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_PURPLE + "マジックウォッチ")) {
                 p.getWorld().spawnParticle(Particle.CLOUD, p.getLocation(), 50, 0.5, 1.5, 0.5, 0.5);
-                p.teleport(lastlocation.get(p));
-                // [Player:haruUDON, Location:x10 y20 z30][][][][][][][][][] の中から pと同じ名前のプレイヤーと同じ箱に登録してあるLocationを取得する
-                Cooldown.setCooldown(p, getAbilityData().getInt("RewindTime.cooltime"), "RewindTime", p.getInventory().getHeldItemSlot()); //クールタイムセット
+                p.teleport(lastLocation.get(p));
+                Cooldown.setCooldown(p, getData("ability").getInt("RewindTime.cooltime"), "RewindTime", p.getInventory().getHeldItemSlot()); //クールタイムセット
                 p.sendMessage(ChatColor.YELLOW + "時間を巻き戻した。");
                 p.getWorld().playSound(p.getLocation(), Sound.BLOCK_ENDERCHEST_CLOSE, 5, 1);
                 p.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, p.getLocation(), 200, 0.5, 1.5, 0.5);
@@ -134,7 +131,7 @@ public class AbilityEvent implements Listener {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            p.getInventory().setItem(p.getInventory().getHeldItemSlot(), getAbilityData().getItemStack("VampireWing.item2"));
+                            p.getInventory().setItem(p.getInventory().getHeldItemSlot(), getData("ability").getItemStack("VampireWing.item2"));
                             p.performCommand("dis bat"); //disコマンドを使用させる
                             String cmd2 = "lp user %player% permission unset idisguise.*";
                             cmd2 = cmd2.replace("%player%", p.getName());
@@ -160,9 +157,9 @@ public class AbilityEvent implements Listener {
                                 p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BAT_TAKEOFF, 10, 1);
                                 p.getWorld().spawnParticle(Particle.DAMAGE_INDICATOR, p.getLocation(), 50, 0.5, 1.5, 0.5, 0.5);
                                 int maxhealth = 0;
-                                for (String type : getPlayerData().getStringList(p.getUniqueId().toString() + ".customkit." +
-                                        getPlayerData().getString(p.getUniqueId().toString() + ".customkit.select") + ".type")) {
-                                    maxhealth += getTypeData().getInt(type + ".health");
+                                for (String type : getData("player").getStringList(p.getUniqueId().toString() + ".customkit." +
+                                        getData("player").getString(p.getUniqueId().toString() + ".customkit.select") + ".type")) {
+                                    maxhealth += getData("type").getInt(type + ".health");
                                 }
                                 p.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxhealth);
                                 p.setHealth(BeforeHealth.get(p.getUniqueId()));
@@ -174,7 +171,7 @@ public class AbilityEvent implements Listener {
                                         String cmd2 = "lp user %player% permission unset idisguise.*";
                                         cmd2 = cmd2.replace("%player%", p.getName());
                                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd2); //disコマンドを使用するための権限を剥奪
-                                        Cooldown.setCooldown(p, getAbilityData().getInt("VampireWing.cooltime"), "VampireWing", slot);
+                                        Cooldown.setCooldown(p, getData("ability").getInt("VampireWing.cooltime"), "VampireWing", slot);
                                     }
                                 }.runTaskLater(getPlugin(), 1);
                                 cancel();
@@ -201,9 +198,9 @@ public class AbilityEvent implements Listener {
                 p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BAT_TAKEOFF, 10, 1);
                 p.getWorld().spawnParticle(Particle.DAMAGE_INDICATOR, p.getLocation(), 50, 0.5, 1.5, 0.5, 0.5);
                 int maxhealth = 0;
-                for (String type : getPlayerData().getStringList(p.getUniqueId().toString() + ".customkit." +
-                        getPlayerData().getString(p.getUniqueId().toString() + ".customkit.select") + ".type")) {
-                    maxhealth += getTypeData().getInt(type + ".health");
+                for (String type : getData("player").getStringList(p.getUniqueId().toString() + ".customkit." +
+                        getData("player").getString(p.getUniqueId().toString() + ".customkit.select") + ".type")) {
+                    maxhealth += getData("type").getInt(type + ".health");
                 }
                 p.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxhealth);
                 p.setHealth(BeforeHealth.get(p.getUniqueId()));
@@ -211,7 +208,7 @@ public class AbilityEvent implements Listener {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        Cooldown.setCooldown(p, getAbilityData().getInt("VampireWing.cooltime"), "VampireWing", p.getInventory().getHeldItemSlot());
+                        Cooldown.setCooldown(p, getData("ability").getInt("VampireWing.cooltime"), "VampireWing", p.getInventory().getHeldItemSlot());
                         p.performCommand("undis"); //disコマンドを使用させる
                         String cmd2 = "lp user %player% permission unset idisguise.*";
                         cmd2 = cmd2.replace("%player%", p.getName());
@@ -239,7 +236,7 @@ public class AbilityEvent implements Listener {
                 e.setCancelled(true);
                 if (checkUseMana(p, 5)) {
                     removeMana(p, 5);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("VampireHeart.cooltime"), "VampireHeart", p.getInventory().getHeldItemSlot());
+                    Cooldown.setCooldown(p, getData("ability").getInt("VampireHeart.cooltime"), "VampireHeart", p.getInventory().getHeldItemSlot());
                     // アビリティの処理
                     for (Player other : Alive) {
                         if (other.getWorld() == p.getWorld() && other.getLocation().distanceSquared(p.getLocation()) <= 16) {
@@ -283,7 +280,7 @@ public class AbilityEvent implements Listener {
                 }
                 if (checkUseMana(p, 3)) {
                     removeMana(p, 3);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("FriezeSpell.cooltime"), "FriezeSpell", p.getInventory().getHeldItemSlot());
+                    Cooldown.setCooldown(p, getData("ability").getInt("FriezeSpell.cooltime"), "FriezeSpell", p.getInventory().getHeldItemSlot());
                     p.playSound(p.getLocation(), Sound.BLOCK_GLASS_BREAK, 1, 2);
                     // アビリティの処理
                     new BukkitRunnable() {
@@ -349,7 +346,7 @@ public class AbilityEvent implements Listener {
                 if (checkUseMana(p, 4)) {
                     if (p.getHealth() < p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()){
                         removeMana(p, 4);
-                        Cooldown.setCooldown(p, getAbilityData().getInt("HealSpell.cooltime"), "HealSpell", p.getInventory().getHeldItemSlot());
+                        Cooldown.setCooldown(p, getData("ability").getInt("HealSpell.cooltime"), "HealSpell", p.getInventory().getHeldItemSlot());
                         // アビリティの処理
                         p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 2);
                         p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 3 * 20, 2, true));
@@ -390,7 +387,7 @@ public class AbilityEvent implements Listener {
                             if (p.getHealth() > 1) {
                                 removeMana(p, 10);
                                 p.getInventory().setItem(p.getInventory().getHeldItemSlot(), null);
-                                Cooldown.setCooldown(p, getAbilityData().getInt("VampireBlood.cooltime"), "VampireBlood", p.getInventory().getHeldItemSlot());
+                                Cooldown.setCooldown(p, getData("ability").getInt("VampireBlood.cooltime"), "VampireBlood", p.getInventory().getHeldItemSlot());
                                 // アビリティの処理
                                 p.playSound(p.getLocation(), Sound.BLOCK_CLOTH_BREAK, 1, 1);
                                 p.getWorld().spawnParticle(Particle.REDSTONE, p.getLocation(), 50, 0.5, 1, 0.5, 0);
@@ -475,14 +472,14 @@ public class AbilityEvent implements Listener {
                         loc.add(x, y, z);
                         p.getWorld().spawnParticle(Particle.CRIT, loc, 1, 0, 0, 0, 0.05);
                         if (loc.getBlock().getType().isSolid()) {
-                            Cooldown.setCooldown(p, getAbilityData().getInt("SkullSniper.cooltime"), "SkullSniper", p.getInventory().getHeldItemSlot());
+                            Cooldown.setCooldown(p, getData("ability").getInt("SkullSniper.cooltime"), "SkullSniper", p.getInventory().getHeldItemSlot());
                             break;
                         }
                         for (Player player : loc.getChunk().getWorld().getPlayers()) { //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
                             if (player.getLocation().distance(loc) < 1.5) { //エンティティの半径1.5の範囲内にlocがあるか確認
                                 if (player != (p)) { //エンティティがクリックしたプレイヤーじゃないか
                                     if (Alive.contains(player)) { //エンティティが生きているかどうか
-                                        Cooldown.setCooldown(p, (getAbilityData().getInt("SkullSniper.cooltime") - 20), "SkullSniper", p.getInventory().getHeldItemSlot());
+                                        Cooldown.setCooldown(p, (getData("ability").getInt("SkullSniper.cooltime") - 20), "SkullSniper", p.getInventory().getHeldItemSlot());
                                         p.getWorld().spawnParticle(Particle.CRIT, loc, 50, 0, 0, 0, 1);
                                         player.getWorld().spawnParticle(Particle.BLOCK_CRACK, player.getLocation(), 100, 0.5, 1, 0.5, 0, new MaterialData(Material.BONE_BLOCK));
                                         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1, 0);
@@ -494,7 +491,7 @@ public class AbilityEvent implements Listener {
                         }
                         loc.subtract(x, y, z);
                         if (i == 39){
-                            Cooldown.setCooldown(p, getAbilityData().getInt("SkullSniper.cooltime"), "SkullSniper", p.getInventory().getHeldItemSlot());
+                            Cooldown.setCooldown(p, getData("ability").getInt("SkullSniper.cooltime"), "SkullSniper", p.getInventory().getHeldItemSlot());
                         }
                     }
                     //ここまで
@@ -521,7 +518,7 @@ public class AbilityEvent implements Listener {
                 }
                 if (checkUseMana(p, 7)) {
                     removeMana(p, 7);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("GrapplingArrow.cooltime"), "GrapplingArrow", p.getInventory().getHeldItemSlot());
+                    Cooldown.setCooldown(p, getData("ability").getInt("GrapplingArrow.cooltime"), "GrapplingArrow", p.getInventory().getHeldItemSlot());
                     // アビリティの処理
                     p.playSound(p.getLocation(), Sound.ENTITY_BOBBER_THROW, 1, 0.7F);
                     p.playSound(p.getLocation(), Sound.ENTITY_BOBBER_THROW, 1, 0.5F);
@@ -560,7 +557,7 @@ public class AbilityEvent implements Listener {
                 e.setCancelled(true);
                 if (checkUseMana(p, 4)){
                     removeMana(p, 4);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("RefreshDebuff.cooltime"), "RefreshDebuff", p.getInventory().getHeldItemSlot());
+                    Cooldown.setCooldown(p, getData("ability").getInt("RefreshDebuff.cooltime"), "RefreshDebuff", p.getInventory().getHeldItemSlot());
                     p.removePotionEffect(PotionEffectType.SLOW);
                     p.removePotionEffect(PotionEffectType.WEAKNESS);
                     p.removePotionEffect(PotionEffectType.POISON);
@@ -597,7 +594,7 @@ public class AbilityEvent implements Listener {
                 e.setCancelled(true);
                 if (checkUseMana(p, 11)) {
                     removeMana(p, 11);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("BoneVeil.cooltime"), "BoneVeil", p.getInventory().getHeldItemSlot());
+                    Cooldown.setCooldown(p, getData("ability").getInt("BoneVeil.cooltime"), "BoneVeil", p.getInventory().getHeldItemSlot());
                     BoneVeil.put(p, true);
                     p.playSound(p.getLocation(), Sound.ITEM_ARMOR_EQUIP_CHAIN, 10, 1);
                     new BukkitRunnable(){
@@ -632,7 +629,7 @@ public class AbilityEvent implements Listener {
                 if (checkUseMana(p, 5)){
                     removeMana(p, 5);
                     e.setCancelled(true);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("EnderTeleport.cooltime"), "EnderTeleport", p.getInventory().getHeldItemSlot());
+                    Cooldown.setCooldown(p, getData("ability").getInt("EnderTeleport.cooltime"), "EnderTeleport", p.getInventory().getHeldItemSlot());
                     final Location loc = p.getLocation();
                     final Vector direction = loc.getDirection();
                     outer:
@@ -701,7 +698,7 @@ public class AbilityEvent implements Listener {
                 e.setCancelled(true);
                 if (checkUseMana(p, 8)) {
                     removeMana(p, 8);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("EnderSmoke.cooltime"), "EnderSmoke", p.getInventory().getHeldItemSlot());
+                    Cooldown.setCooldown(p, getData("ability").getInt("EnderSmoke.cooltime"), "EnderSmoke", p.getInventory().getHeldItemSlot());
                     p.getWorld().spawnParticle(Particle.SMOKE_LARGE, p.getLocation(), 100, 2, 1, 2, 0.5);
                     p.getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 5, 0);
                     // アビリティの処理
@@ -743,7 +740,7 @@ public class AbilityEvent implements Listener {
                 e.setCancelled(true);
                 if (checkUseMana(p, 2)) {
                     removeMana(p, 2);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("ZombieShooter.cooltime"), "ZombieShooter", p.getInventory().getHeldItemSlot());
+                    Cooldown.setCooldown(p, getData("ability").getInt("ZombieShooter.cooltime"), "ZombieShooter", p.getInventory().getHeldItemSlot());
                     // アビリティの処理
                     p.playSound(p.getLocation(), Sound.ENTITY_ZOMBIE_HURT, 1, 1.2F);
                     Item dropItem = p.getWorld().dropItem(p.getLocation().add(0, 1, 0), new ItemStack(Material.ROTTEN_FLESH, 1));
@@ -809,7 +806,7 @@ public class AbilityEvent implements Listener {
                         if (p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / 3 < p.getHealth()) {
                             p.setHealth(p.getHealth() - (p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / 3));
                             removeMana(p, 10);
-                            Cooldown.setCooldown(p, getAbilityData().getInt("ImmortalGrave.cooltime"), "ImmortalGrave", p.getInventory().getHeldItemSlot());
+                            Cooldown.setCooldown(p, getData("ability").getInt("ImmortalGrave.cooltime"), "ImmortalGrave", p.getInventory().getHeldItemSlot());
                             Item dropItem = p.getWorld().dropItem(p.getLocation(), new ItemStack(Material.SKULL_ITEM, 1, (short) 2));
                             dropItem.setPickupDelay(Integer.MAX_VALUE);
                             dropItem.setVelocity(p.getLocation().getDirection().multiply(0));
@@ -874,7 +871,7 @@ public class AbilityEvent implements Listener {
                 e.setCancelled(true);
                 if (checkUseMana(p, 20)){
                     removeMana(p, 20);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("InfernoSpell.cooltime"), "InfernoSpell", p.getInventory().getHeldItemSlot());
+                    Cooldown.setCooldown(p, getData("ability").getInt("InfernoSpell.cooltime"), "InfernoSpell", p.getInventory().getHeldItemSlot());
                     p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 10, 0);
                     p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 10, 1);
                     p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 10, 0.7f);
@@ -932,7 +929,7 @@ public class AbilityEvent implements Listener {
                 if (checkUseMana(p, 7)) {
                     if (!(p.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() == Material.AIR)){
                         removeMana(p, 7);
-                        Cooldown.setCooldown(p, getAbilityData().getInt("ZombiePower.cooltime"), "ZombiePower", p.getInventory().getHeldItemSlot());
+                        Cooldown.setCooldown(p, getData("ability").getInt("ZombiePower.cooltime"), "ZombiePower", p.getInventory().getHeldItemSlot());
                         p.getWorld().playSound(p.getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_DOOR_WOOD, 5, 0);
                         Location loc = p.getLocation();
                         loc.setPitch(90);
@@ -995,7 +992,7 @@ public class AbilityEvent implements Listener {
                 e.setCancelled(true);
                 if (checkUseMana(p, 7)) {
                     removeMana(p, 7);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("CreeperGrenade.cooltime"), "CreeperGrenade", p.getInventory().getHeldItemSlot());
+                    Cooldown.setCooldown(p, getData("ability").getInt("CreeperGrenade.cooltime"), "CreeperGrenade", p.getInventory().getHeldItemSlot());
                     // アビリティの処理
                     p.playSound(p.getLocation(), Sound.ENTITY_SNOWBALL_THROW, 1, 1);
                     Item dropItem = p.getWorld().dropItem(p.getLocation().add(0, 1, 0), new ItemStack(Material.TNT, 1));
@@ -1070,7 +1067,7 @@ public class AbilityEvent implements Listener {
                 e.setCancelled(true);
                 if (checkUseMana(p, 8)){
                     removeMana(p, 8);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("BombJump.cooltime"), "BombJump", p.getInventory().getHeldItemSlot());
+                    Cooldown.setCooldown(p, getData("ability").getInt("BombJump.cooltime"), "BombJump", p.getInventory().getHeldItemSlot());
                     p.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, p.getLocation(), 5, 0, 0, 0, 2);
                     p.getWorld().spawnParticle(Particle.CLOUD, p.getLocation(), 50, 0.2, 0.2, 0.2, 0.2);
                     p.getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 3, 1);
@@ -1102,7 +1099,7 @@ public class AbilityEvent implements Listener {
                         if (((victim.getHealth() - e.getDamage()) > 0)) {
                             if (checkUseMana(attacker, 11)){
                                 removeMana(attacker, 11);
-                                Cooldown.setCooldown(attacker, getAbilityData().getInt("ExplodePunch.cooltime"), "ExplodePunch", attacker.getInventory().getHeldItemSlot());
+                                Cooldown.setCooldown(attacker, getData("ability").getInt("ExplodePunch.cooltime"), "ExplodePunch", attacker.getInventory().getHeldItemSlot());
                                 Location AttackerLocation = attacker.getLocation();
                                 Location VictimLocation = victim.getLocation();
                                 victim.getWorld().spawnParticle(Particle.CRIT_MAGIC, VictimLocation.add(0, 1.5, 0), 50, 0.2, 0.2, 0.2, 0.5);
@@ -1144,7 +1141,7 @@ public class AbilityEvent implements Listener {
                 e.setCancelled(true);
                 if (checkUseMana(p, 14)){
                     removeMana(p, 14);
-                    Cooldown.setCooldown(p, getAbilityData().getInt("CreeperExplosion.cooltime"), "CreeperExplosion", p.getInventory().getHeldItemSlot());
+                    Cooldown.setCooldown(p, getData("ability").getInt("CreeperExplosion.cooltime"), "CreeperExplosion", p.getInventory().getHeldItemSlot());
                     ShapeMob.put(p.getUniqueId(), "creeper");
                     p.removePotionEffect(PotionEffectType.SPEED);
                     p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 999999, 2, true));
@@ -1228,9 +1225,9 @@ public class AbilityEvent implements Listener {
                         if (GraveLocation.containsKey(victim)){
                             victim.teleport(GraveLocation.get(victim));
                             int maxhealth = 0;
-                            for (String type : getPlayerData().getStringList(victim.getUniqueId().toString() + ".customkit." +
-                                    getPlayerData().getString(victim.getUniqueId().toString() + ".customkit.select") + ".type")) {
-                                maxhealth += getTypeData().getInt(type + ".health");
+                            for (String type : getData("player").getStringList(victim.getUniqueId().toString() + ".customkit." +
+                                    getData("player").getString(victim.getUniqueId().toString() + ".customkit.select") + ".type")) {
+                                maxhealth += getData("type").getInt(type + ".health");
                             }
                             victim.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxhealth);
                             victim.setHealth(1);
@@ -1245,8 +1242,8 @@ public class AbilityEvent implements Listener {
                             victim.setGameMode(GameMode.SPECTATOR);
                             Alive.remove(victim);
                             Spectator.add(victim);
-                            String killEffect = getPlayerData().getString(victim.getUniqueId().toString() + ".killeffect");
-                            KillEffect.Effect(victim, killEffect);
+                            String killEffect = getData("player").getString(victim.getUniqueId().toString() + ".killeffect");
+                            Decoration.KillEffect(victim, killEffect);
                             victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 1.3F);
                             victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 1F);
                             victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 0.7F);
@@ -1324,14 +1321,6 @@ public class AbilityEvent implements Listener {
             }
         }
     }
-
-//    @EventHandler
-//    public void PlayerDoNotMove(PlayerMoveEvent event){
-//        Player player = event.getPlayer();
-//        if (DoNotMove.containsKey(player)){
-//            player.teleport(DoNotMove.get(player));
-//        }
-//    }
 
     @EventHandler
     public void DropItemEvent(PlayerDropItemEvent e){

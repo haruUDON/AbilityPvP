@@ -1,5 +1,6 @@
 package haruudon.udon.magicstick;
 
+import haruudon.udon.magicstick.commands.Hub;
 import haruudon.udon.magicstick.commands.SetCrateBlock;
 import haruudon.udon.magicstick.commands.TestAbility;
 import haruudon.udon.magicstick.cooldown.Cooldown;
@@ -38,10 +39,12 @@ public final class MagicStick extends JavaPlugin {
         GUIManager.setupNow();
         Cooldown.setupCooldown();
         Join.setupJoinPlayer();
+        Gacha.setupGachaResult();
 
         getCommand("testability").setExecutor(new TestAbility());
         getCommand("test").setExecutor(new TestAbility());
         getCommand("crate").setExecutor(new SetCrateBlock());
+        getCommand("hub").setExecutor(new Hub());
 
         getServer().getPluginManager().registerEvents(new AbilityEvent(), this);
         getServer().getPluginManager().registerEvents(new FoodLevel(), this);
@@ -62,36 +65,17 @@ public final class MagicStick extends JavaPlugin {
         return plugin;
     }
 
-    public static FileConfiguration getPlayerData(){
-        return data;
-    }
-
-    public static FileConfiguration getAbilityData(){
-        return ability;
-    }
-
-    public static FileConfiguration getWeaponData(){
-        return weapon;
-    }
-
-    public static FileConfiguration getTypeData(){
-        return type;
-    }
-
-    public static FileConfiguration getMapData(){
-        return map;
-    }
-
-    public static FileConfiguration getItemData(){
-        return item;
-    }
-
-    public static FileConfiguration getKillEffectData(){
-        return kill;
-    }
-
-    public static FileConfiguration getBlockData(){
-        return block;
+    public static FileConfiguration getData(String s){
+        FileConfiguration re = null;
+        if (s.equals("player")) re = data;
+        if (s.equals("ability")) re = ability;
+        if (s.equals("weapon")) re = weapon;
+        if (s.equals("type")) re = type;
+        if (s.equals("map")) re = map;
+        if (s.equals("item")) re = item;
+        if (s.equals("block")) re = block;
+        if (s.equals("killeffect")) re = kill;
+        return re;
     }
 
     public static void savePlayerData(){
@@ -109,8 +93,4 @@ public final class MagicStick extends JavaPlugin {
             plugin.getLogger().info("データをセーブできませんでした。");
         }
     }
-
-//    public static void setAndSavePlayerData(Player p, String s, Object o){
-//        getPlayerData().set(p.getUniqueId().toString() + s, o);
-//    }
 }

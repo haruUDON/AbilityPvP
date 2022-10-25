@@ -33,12 +33,12 @@ public class Join {
 
     public static void JoinPlayer(Player p){
         if (!(JoinPlayer.contains(p)) && !(GamePlayer.contains(p))){
-            String select = getPlayerData().getString(p.getUniqueId().toString() + ".customkit.select");
-            if (!(select == null) && getPlayerData().getBoolean(p.getUniqueId().toString() + ".customkit." + select + ".use")) {
+            String select = getData("player").getString(p.getUniqueId().toString() + ".customkit.select");
+            if (!(select == null) && getData("player").getBoolean(p.getUniqueId().toString() + ".customkit." + select + ".use")) {
                 if (JoinPlayer.size() < 4) {
                     JoinPlayer.add(p);
                     p.getInventory().clear();
-                    p.getInventory().setItem(8, getItemData().getItemStack("Quit"));
+                    p.getInventory().setItem(8, getData("item").getItemStack("Quit"));
                     for (Player join : JoinPlayer) {
                         join.sendMessage(ChatColor.GRAY + p.getName() + ChatColor.YELLOW + "が参加しました (" + ChatColor.AQUA + JoinPlayer.size() + ChatColor.YELLOW + "/"
                                 + ChatColor.AQUA + "4" + ChatColor.YELLOW + ")");
@@ -89,9 +89,9 @@ public class Join {
             }
             JoinPlayer.remove(p);
             p.getInventory().clear();
-            p.getInventory().setItem(0, getItemData().getItemStack("Custom"));
-            p.getInventory().setItem(4, getItemData().getItemStack("Join"));
-            p.getInventory().setItem(8, getItemData().getItemStack("Shop"));
+            p.getInventory().setItem(0, getData("item").getItemStack("Custom"));
+            p.getInventory().setItem(4, getData("item").getItemStack("Join"));
+            p.getInventory().setItem(8, getData("item").getItemStack("Shop"));
         } else {
             p.sendMessage(ChatColor.RED + "あなたはゲームに参加していません");
             p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
@@ -99,7 +99,7 @@ public class Join {
     }
 
     public static void GameStart(){
-        List<String> Maps = getMapData().getStringList("All");
+        List<String> Maps = getData("map").getStringList("All");
         Random random = new Random();
         int randomMap = random.nextInt(Maps.size());
         String Map = Maps.get(randomMap);
@@ -109,7 +109,7 @@ public class Join {
         for (Player player : GamePlayer){
             haruudon.udon.magicstick.Scoreboard.Remove(player);
             player.getInventory().clear();
-            Location loc = (Location) getMapData().get(Map + LocationList.get(list));
+            Location loc = (Location) getData("map").get(Map + LocationList.get(list));
             player.teleport(loc);
             player.sendTitle(ChatColor.WHITE + "" + ChatColor.BOLD + Map, ChatColor.GREEN + "マップ", 0, 60, 20);
             list += 1;
@@ -141,19 +141,19 @@ public class Join {
                         t.addEntry(player.getName());
                         Mana.setInitialMana(player);
                         String uuid = player.getUniqueId().toString();
-                        String select = getPlayerData().getString(uuid + ".customkit.select");
-                        player.getInventory().setItem(0, getWeaponData()
-                                .getItemStack(getPlayerData().getString(uuid + ".customkit." + select + ".weapon") + ".item1"));
+                        String select = getData("player").getString(uuid + ".customkit.select");
+                        player.getInventory().setItem(0, getData("weapon")
+                                .getItemStack(getData("player").getString(uuid + ".customkit." + select + ".weapon") + ".item1"));
                         int slot1 = 1;
-                        for (String ability : getPlayerData().getStringList(uuid + ".customkit." + select + ".ability")) {
-                            player.getInventory().setItem(slot1, getAbilityData().getItemStack(ability + ".item1"));
+                        for (String ability : getData("player").getStringList(uuid + ".customkit." + select + ".ability")) {
+                            player.getInventory().setItem(slot1, getData("ability").getItemStack(ability + ".item1"));
                             slot1++;
                         }
                         int maxHealth = 0;
                         int slot2 = 7;
-                        for (String type : getPlayerData().getStringList(uuid + ".customkit." + select + ".type")){
-                            player.getInventory().setItem(slot2, getTypeData().getItemStack(type + ".item1"));
-                            maxHealth += getTypeData().getInt(type + ".health");
+                        for (String type : getData("player").getStringList(uuid + ".customkit." + select + ".type")){
+                            player.getInventory().setItem(slot2, getData("type").getItemStack(type + ".item1"));
+                            maxHealth += getData("type").getInt(type + ".health");
                             slot2++;
                         }
                         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
@@ -182,7 +182,7 @@ public class Join {
         Scoreboard score = Bukkit.getScoreboardManager().getMainScoreboard();
         Team t = score.getTeam("hide");
         //ここまで
-        Location lobby = (Location) getMapData().get("MainLobby.location");
+        Location lobby = (Location) getData("map").get("MainLobby.location");
         Spectator.clear();
         for (Player player : GamePlayer){
             haruudon.udon.magicstick.Scoreboard.Create(player);
@@ -194,9 +194,9 @@ public class Join {
             player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);
             player.setHealth(20);
             player.setFoodLevel(20);
-            player.getInventory().setItem(0, getItemData().getItemStack("Custom"));
-            player.getInventory().setItem(4, getItemData().getItemStack("Join"));
-            player.getInventory().setItem(8, getItemData().getItemStack("Shop"));
+            player.getInventory().setItem(0, getData("item").getItemStack("Custom"));
+            player.getInventory().setItem(4, getData("item").getItemStack("Join"));
+            player.getInventory().setItem(8, getData("item").getItemStack("Shop"));
             Mana.mana.remove(player.getUniqueId());
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 0);
             if (Cooldowns.containsKey(player.getUniqueId())){

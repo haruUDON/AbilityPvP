@@ -3,8 +3,6 @@ package haruudon.udon.magicstick.commands;
 import haruudon.udon.magicstick.MagicStick;
 import haruudon.udon.magicstick.Mana;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,7 +17,7 @@ public class TestAbility implements CommandExecutor {
                 if (label.equalsIgnoreCase("testability")){
                     if (args.length == 1){
                         try {
-                            ItemStack item = MagicStick.getAbilityData().getItemStack(args[0] + ".item1");
+                            ItemStack item = MagicStick.getData("ability").getItemStack(args[0] + ".item1");
                             p.getInventory().setItem(2, item);
                             Mana.setInitialMana(p);
                         } catch (IllegalArgumentException e){
@@ -27,9 +25,7 @@ public class TestAbility implements CommandExecutor {
                         }
                     }
                 } else if (label.equalsIgnoreCase("test")){
-                    Location loc = (Location) MagicStick.getBlockData().get("Crate");
-                    loc.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, loc.add(0.5, 0, 0.5), 100, 0.3, 0.3, 0.3, 1);
-                    loc.subtract(0.5, 0, 0.5);
+                    p.sendMessage("テスト");
                 }
             }
         }
