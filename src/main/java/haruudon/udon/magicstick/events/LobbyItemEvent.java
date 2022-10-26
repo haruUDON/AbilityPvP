@@ -1,7 +1,7 @@
 package haruudon.udon.magicstick.events;
 
 import haruudon.udon.magicstick.GUIManager;
-import haruudon.udon.magicstick.Join;
+import haruudon.udon.magicstick.GameMain;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -16,8 +16,8 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import static haruudon.udon.magicstick.Join.GamePlayer;
-import static haruudon.udon.magicstick.Join.JoinPlayer;
+import static haruudon.udon.magicstick.GameMain.GamePlayer;
+import static haruudon.udon.magicstick.GameMain.JoinPlayer;
 
 public class LobbyItemEvent implements Listener {
     @EventHandler
@@ -46,10 +46,10 @@ public class LobbyItemEvent implements Listener {
                 }
             } else if (item.getType() == Material.BED && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.RED + "退出する")) {
                 e.setCancelled(true);
-                Join.QuitPlayer(p);
+                GameMain.QuitPlayer(p);
             } else if (item.getType() == Material.EMERALD && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.DARK_GREEN + "装飾品")) {
                 e.setCancelled(true);
-                GUIManager.SelectDecoration(p);
+                GUIManager.DecorationMain(p);
             }
         }
     }

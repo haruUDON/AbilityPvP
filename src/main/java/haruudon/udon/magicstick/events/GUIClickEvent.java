@@ -3,7 +3,7 @@ package haruudon.udon.magicstick.events;
 import haruudon.udon.magicstick.CoinAndMagicOre;
 import haruudon.udon.magicstick.GUIManager;
 import haruudon.udon.magicstick.Gacha;
-import haruudon.udon.magicstick.Join;
+import haruudon.udon.magicstick.GameMain;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -52,7 +52,7 @@ public class GUIClickEvent implements Listener {
                             savePlayerData();
                             p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             p.closeInventory();
-                            Join.JoinPlayer(p);
+                            GameMain.JoinPlayer(p);
                         } else {
                             p.closeInventory();
                             p.sendMessage(ChatColor.RED + "キットのセットアップが完了していません");
@@ -155,7 +155,7 @@ public class GUIClickEvent implements Listener {
             }
             List<String> list2 = Arrays.asList("アビリティ1", "アビリティ2", "アビリティ3", "アビリティ4");
             for (String s : list2){
-                if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "タイプ1" + "をセットする")){
+                if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + s + "をセットする")){
                     e.setCancelled(true);
                     if (e.getCurrentItem().getType() == Material.THIN_GLASS){
                         List<String> ability = getData("player").getStringList(uuid + ".customkit." + now.get(p.getUniqueId()) + ".ability");
@@ -218,6 +218,46 @@ public class GUIClickEvent implements Listener {
                                             GUIManager.SetAbilityMenu(p);
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                    return;
+                }
+            }
+            for (String s : Arrays.asList("キルエフェクト", "キルメッセージ")){
+                if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + s)){
+                    String deco = null;
+                    if (s.equals("キルエフェクト")) deco = "killeffect";
+                    if (s.equals("キルメッセージ")) deco = "killmessage";
+                    if (deco == null) return;
+                    e.setCancelled(true);
+                    if (e.getSlot() == 31){
+                        GUIManager.DecorationMain(p);
+                    } else if (e.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GRAY + "次へ")) {
+                        Inventory inventory = e.getClickedInventory();
+                        GUIManager.LoadSelectDecoration(inventory, p, "next");
+                        p.updateInventory();
+                        p.playSound(p.getLocation(), Sound.BLOCK_WOOD_BUTTON_CLICK_ON, 1, 1);
+                    } else if (e.getCurrentItem().getItemMeta().getDisplayName().equals(ChatColor.GRAY + "前へ")) {
+                        Inventory inventory = e.getClickedInventory();
+                        GUIManager.LoadSelectDecoration(inventory, p, "prev");
+                        p.updateInventory();
+                        p.playSound(p.getLocation(), Sound.BLOCK_WOOD_BUTTON_CLICK_ON, 1, 1);
+                    } else {
+                        for (String a : getData(deco).getStringList("All")) {
+                            ItemStack item = getData(deco).getItemStack(a + ".item1");
+                            String itemname = item.getItemMeta().getDisplayName();
+                            if (e.getCurrentItem().getItemMeta().getDisplayName().equalsIgnoreCase(itemname)){
+                                if (getData("player").getStringList(uuid + ".have." + deco).contains(a)){
+                                    getData("player").set(uuid + "." + deco, a);
+                                    savePlayerData();
+                                    p.playSound(p.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
+                                    Inventory inventory = e.getClickedInventory();
+                                    GUIManager.LoadSelectDecoration(inventory, p, null);
+                                    p.updateInventory();
+                                } else {
+                                    p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
                                 }
                             }
                         }
@@ -333,34 +373,14 @@ public class GUIClickEvent implements Listener {
                         break;
                 }
                 e.setCancelled(true);
-            } else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "キルエフェクト")){
-                e.setCancelled(true);
-                if (e.getSlot() == 31){
-                    GUIManager.SelectDecoration(p);
-                } else {
-                    for (String a : getData("killeffect").getStringList("All")) {
-                        ItemStack item = getData("killeffect").getItemStack(a + ".item1");
-                        String itemname = item.getItemMeta().getDisplayName();
-                        if (e.getCurrentItem().getItemMeta().getDisplayName().equalsIgnoreCase(itemname)){
-                            if (getData("player").getStringList(uuid + ".have.killeffect").contains(a)){
-                                getData("player").set(uuid + ".killeffect", a);
-                                savePlayerData();
-                                p.playSound(p.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
-                                Inventory inventory = e.getClickedInventory();
-                                GUIManager.LoadKillEffectMenu(inventory, p);
-                                p.updateInventory();
-                            } else {
-                                p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
-                            }
-                        }
-                    }
-                }
             } else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "装飾品")){
                 e.setCancelled(true);
                 if (e.getSlot() == 31){
                     p.closeInventory();
                 } else if (e.getSlot() == 10){
-                    GUIManager.SelectKillEffect(p);
+                    GUIManager.SelectDecoration(p, "killeffect", "キルエフェクト");
+                } else if (e.getSlot() == 12){
+                    GUIManager.SelectDecoration(p, "killmessage", "キルメッセージ");
                 }
             }  else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "ガチャ")){
                 e.setCancelled(true);

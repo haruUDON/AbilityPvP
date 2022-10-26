@@ -25,7 +25,7 @@ public class TestAbility implements CommandExecutor {
                         }
                     }
                 } else if (label.equalsIgnoreCase("test")){
-                    p.sendMessage("テスト");
+                    p.getInventory().setItem(2, MagicStick.getData("killmessage").getItemStack("Christmas.item1"));
                 }
             }
         }

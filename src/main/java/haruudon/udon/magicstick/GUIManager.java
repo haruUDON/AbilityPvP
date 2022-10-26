@@ -400,82 +400,151 @@ public class GUIManager {
         p.openInventory(inventory);
     }
 
-    public static void SelectDecoration(Player p){
+    public static void DecorationMain(Player p){
         p.playSound(p.getLocation(), Sound.BLOCK_WOOD_BUTTON_CLICK_ON, 1, 1);
         Inventory inventory = Bukkit.createInventory(p,36, ChatColor.DARK_GRAY + "装飾品");
-        ItemStack kill = new ItemStack(Material.DIAMOND_SWORD);
+        ItemStack effect = new ItemStack(Material.DIAMOND_SWORD);
+        ItemMeta effectMeta = effect.getItemMeta();
+        effectMeta.setDisplayName(ChatColor.DARK_AQUA + "キルエフェクト");
+        effectMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        ItemStack effectItem = getData("killeffect").getItemStack(getData("player").getString(p.getUniqueId().toString() + ".killeffect") + ".item1");
+        ArrayList<String> effectLore = new ArrayList<>();
+        effectLore.add(ChatColor.GRAY + "使用中:");
+        effectLore.add(effectItem.getItemMeta().getDisplayName());
+        effectMeta.setLore(effectLore);
+        effect.setItemMeta(effectMeta);
+        ItemStack message = new ItemStack(Material.SIGN);
+        ItemMeta messageMeta = message.getItemMeta();
+        messageMeta.setDisplayName(ChatColor.GOLD + "キルメッセージ");
+        ItemStack messageItem = getData("killmessage").getItemStack(getData("player").getString(p.getUniqueId().toString() + ".killmessage") + ".item1");
+        ArrayList<String> messageLore = new ArrayList<>();
+        messageLore.add(ChatColor.GRAY + "使用中:");
+        messageLore.add(messageItem.getItemMeta().getDisplayName());
+        messageMeta.setLore(messageLore);
+        message.setItemMeta(messageMeta);
         ItemStack back = new ItemStack(Material.BARRIER);
-        ItemMeta killMeta = kill.getItemMeta();
         ItemMeta backMeta = back.getItemMeta();
-        killMeta.setDisplayName(ChatColor.DARK_AQUA + "キルエフェクト");
-        killMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        ItemStack item = getData("killeffect").getItemStack(getData("player").getString(p.getUniqueId().toString() + ".killeffect") + ".item1");
-        ArrayList<String> lore = new ArrayList<>();
-        lore.add(ChatColor.WHITE + "使用中: " + item.getItemMeta().getDisplayName());
-        killMeta.setLore(lore);
-        backMeta.setDisplayName(ChatColor.RED + "戻る");
-        kill.setItemMeta(killMeta);
+        backMeta.setDisplayName(ChatColor.RED + "閉じる");
         back.setItemMeta(backMeta);
         ItemStack background = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 15);
         for (int i = 0; i <= 35; i++){
             inventory.setItem(i, background);
         }
-        inventory.setItem(10, kill);
+        inventory.setItem(10, effect);
+        inventory.setItem(12, message);
         inventory.setItem(31, back);
         p.openInventory(inventory);
     }
 
-    public static void SelectKillEffect(Player p){
+    public static void SelectDecoration(Player p, String deco, String name){
+        Gacha.NowOpenGUI.put(p, "0");
         p.playSound(p.getLocation(), Sound.BLOCK_WOOD_BUTTON_CLICK_ON, 1, 1);
-        Inventory inventory = Bukkit.createInventory(p,36, ChatColor.DARK_GRAY + "キルエフェクト");
+        Inventory inventory = Bukkit.createInventory(p,36, ChatColor.DARK_GRAY + name);
         ItemStack back = new ItemStack(Material.BARRIER);
         ItemMeta backMeta = back.getItemMeta();
         backMeta.setDisplayName(ChatColor.RED + "戻る");
         back.setItemMeta(backMeta);
         ItemStack background = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 15);
         for (int i = 0; i <= 35; i++){
+            if (i <= 26) {
+                inventory.setItem(i, null);
+                continue;
+            }
             inventory.setItem(i, background);
         }
         inventory.setItem(31, back);
         int slot = 0;
-        List<String> allKillEffect = getData("killeffect").getStringList("All");
-        for (String s : allKillEffect){
-            ItemStack killeffect = getData("killeffect").getItemStack(s + ".item1");
-            ItemMeta meta = killeffect.getItemMeta();
+        List<String> all = getData(deco).getStringList("All");
+        for (String s : all){
+            if (slot == 27) break;
+            ItemStack decoration = getData(deco).getItemStack(s + ".item1");
+            ItemMeta meta = decoration.getItemMeta();
             List<String> lore = meta.getLore();
-            if (getData("player").getString(p.getUniqueId().toString() + ".killeffect").equalsIgnoreCase(s)){
+            meta.removeEnchant(Enchantment.LUCK);
+            if (getData("player").getString(p.getUniqueId().toString() + "." + deco).equalsIgnoreCase(s)){
                 lore.set((lore.size() - 1), ChatColor.YELLOW + "使用中");
-            } else if (getData("player").getStringList(p.getUniqueId().toString() + ".have.killeffect").contains(s)){
+                meta.addEnchant(Enchantment.LUCK, 1, true);
+                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            } else if (getData("player").getStringList(p.getUniqueId().toString() + ".have." + deco).contains(s)){
                 lore.set((lore.size() - 1), ChatColor.GREEN + "所持済み");
             } else {
                 lore.set((lore.size() - 1), ChatColor.RED + "未所持");
             }
             meta.setLore(lore);
-            killeffect.setItemMeta(meta);
-            inventory.setItem(slot, killeffect);
+            decoration.setItemMeta(meta);
+            inventory.setItem(slot, decoration);
             slot++;
+        }
+        if (slot == 27){
+            ItemStack next = new ItemStack(Material.ARROW);
+            ItemMeta nextMeta = next.getItemMeta();
+            nextMeta.setDisplayName(ChatColor.GRAY + "次へ");
+            next.setItemMeta(nextMeta);
+            inventory.setItem(35, next);
         }
         p.openInventory(inventory);
     }
 
-    public static void LoadKillEffectMenu(Inventory inv, Player p){
+    public static void LoadSelectDecoration(Inventory inv, Player p, String click){
+        ItemStack back = new ItemStack(Material.BARRIER);
+        ItemMeta backMeta = back.getItemMeta();
+        backMeta.setDisplayName(ChatColor.RED + "戻る");
+        back.setItemMeta(backMeta);
+        ItemStack background = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 15);
+        for (int i = 0; i <= 35; i++){
+            if (i <= 26) {
+                inv.setItem(i, null);
+                continue;
+            }
+            inv.setItem(i, background);
+        }
+        inv.setItem(31, back);
+        if (click != null){
+            if (click.equals("next")) {
+                ItemStack prev = new ItemStack(Material.ARROW);
+                ItemMeta prevMeta = prev.getItemMeta();
+                prevMeta.setDisplayName(ChatColor.GRAY + "前へ");
+                prev.setItemMeta(prevMeta);
+                inv.setItem(27, prev);
+                Gacha.NowOpenGUI.put(p, String.valueOf((Integer.parseInt(Gacha.NowOpenGUI.get(p)) + 1)));
+            } else if (click.equals("prev")) {
+                Gacha.NowOpenGUI.put(p, String.valueOf((Integer.parseInt(Gacha.NowOpenGUI.get(p)) - 1)));
+            }
+        }
         int slot = 0;
-        List<String> allKillEffect = getData("killeffect").getStringList("All");
-        for (String s : allKillEffect){
-            ItemStack killeffect = getData("killeffect").getItemStack(s + ".item1");
-            ItemMeta meta = killeffect.getItemMeta();
+        int remove = 27 * Integer.parseInt(Gacha.NowOpenGUI.get(p));
+        String deco = null;
+        if (inv.getTitle().equals(ChatColor.DARK_GRAY + "キルエフェクト")) deco = "killeffect";
+        if (inv.getTitle().equals(ChatColor.DARK_GRAY + "キルメッセージ")) deco = "killmessage";
+        if (deco == null) return;
+        List<String> all = getData(deco).getStringList("All");
+        if (remove > 0) all.subList(0, remove).clear();
+        for (String s : all){
+            if (slot == 27) break;
+            ItemStack decoration = getData(deco).getItemStack(s + ".item1");
+            ItemMeta meta = decoration.getItemMeta();
             List<String> lore = meta.getLore();
-            if (getData("player").getString(p.getUniqueId().toString() + ".killeffect").equalsIgnoreCase(s)){
+            meta.removeEnchant(Enchantment.LUCK);
+            if (getData("player").getString(p.getUniqueId().toString() + "." + deco).equalsIgnoreCase(s)){
                 lore.set((lore.size() - 1), ChatColor.YELLOW + "使用中");
-            } else if (getData("player").getStringList(p.getUniqueId().toString() + ".have.killeffect").contains(s)){
+                meta.addEnchant(Enchantment.LUCK, 1, true);
+                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            } else if (getData("player").getStringList(p.getUniqueId().toString() + ".have." + deco).contains(s)){
                 lore.set((lore.size() - 1), ChatColor.GREEN + "所持済み");
             } else {
                 lore.set((lore.size() - 1), ChatColor.RED + "未所持");
             }
             meta.setLore(lore);
-            killeffect.setItemMeta(meta);
-            inv.setItem(slot, killeffect);
+            decoration.setItemMeta(meta);
+            inv.setItem(slot, decoration);
             slot++;
+        }
+        if (slot == 27){
+            ItemStack next = new ItemStack(Material.ARROW);
+            ItemMeta nextMeta = next.getItemMeta();
+            nextMeta.setDisplayName(ChatColor.GRAY + "次へ");
+            next.setItemMeta(nextMeta);
+            inv.setItem(35, next);
         }
     }
 
@@ -485,8 +554,6 @@ public class GUIManager {
         p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.5f);
         Location loc = (Location) MagicStick.getData("block").get("Crate");
         loc.add(0.5, 0, 0.5);
-        p.spawnParticle(Particle.ENCHANTMENT_TABLE, loc, 100, 0.3, 0.3, 0.3, 1);
-        p.spawnParticle(Particle.SPELL_WITCH, loc, 100, 0.3, 0.3, 0.3, 1);
         p.spawnParticle(Particle.END_ROD, loc, 100, 0.3, 0.3, 0.3, 0.1);
         loc.subtract(0.5, 0, 0.5);
         Inventory inventory = Bukkit.createInventory(p,36, ChatColor.DARK_GRAY + "ガチャ");

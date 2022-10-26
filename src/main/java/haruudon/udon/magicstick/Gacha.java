@@ -28,14 +28,15 @@ public class Gacha {
         new BukkitRunnable(){
             double angle = 0;
             final double radius = 1;
-            final Location loc = location.add(0.5, 1, 0.5);
             @Override
             public void run() {
+                location.add(0.5, 0.3, 0.5);
                 double x = (radius * sin(angle));
                 double z = (radius * cos(angle));
-                loc.getWorld().spawnParticle(Particle.SPELL_WITCH, loc.getX()+x, loc.getY(), loc.getZ()+z, 0, 0, 1, 0);
-                loc.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, loc, 0, 0, 1, 0);
+                location.getWorld().spawnParticle(Particle.SPELL_WITCH, location.getX()+x, location.getY(), location.getZ()+z, 0, 0, 1, 0);
+                location.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, location.getX(), location.getY()+1.5, location.getZ(), 0, 0, 1.3, 2.3);
                 angle += 0.1;
+                location.subtract(0.5, 0.3, 0.5);
             }
         }.runTaskTimer(MagicStick.getPlugin(), 0, 1);
     }

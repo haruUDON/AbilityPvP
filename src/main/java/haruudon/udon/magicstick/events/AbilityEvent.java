@@ -26,7 +26,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.UUID;
 
-import static haruudon.udon.magicstick.Join.*;
+import static haruudon.udon.magicstick.GameMain.*;
 import static haruudon.udon.magicstick.MagicStick.*;
 import static haruudon.udon.magicstick.Mana.*;
 import static java.lang.Math.cos;
@@ -1242,13 +1242,14 @@ public class AbilityEvent implements Listener {
                             victim.setGameMode(GameMode.SPECTATOR);
                             Alive.remove(victim);
                             Spectator.add(victim);
-                            String killEffect = getData("player").getString(victim.getUniqueId().toString() + ".killeffect");
-                            Decoration.KillEffect(victim, killEffect);
+                            Decoration.KillEffect(attacker, victim);
+                            Decoration.KillMassage(attacker, victim);
                             victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 1.3F);
                             victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 1F);
                             victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 0.7F);
+                            KillCount.put(attacker, KillCount.get(attacker) + 1);
                             if (Alive.size() == 1){
-                                Join.GameEnd("Normal");
+                                GameMain.GameEnd("Normal");
                             }
                         }
                     } else if (BoneVeil.containsKey(victim)) {

@@ -1,6 +1,6 @@
 package haruudon.udon.magicstick.events;
 
-import haruudon.udon.magicstick.Join;
+import haruudon.udon.magicstick.GameMain;
 import haruudon.udon.magicstick.Scoreboard;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static haruudon.udon.magicstick.MagicStick.*;
-import static haruudon.udon.magicstick.Join.Alive;
+import static haruudon.udon.magicstick.GameMain.Alive;
 
 public class JoinEvent implements Listener {
     @EventHandler
@@ -28,13 +28,14 @@ public class JoinEvent implements Listener {
         p.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);
         p.setHealth(20);
         p.setFoodLevel(20);
-        p.setGameMode(GameMode.SURVIVAL);
+        p.setGameMode(GameMode.ADVENTURE);
         p.getInventory().setItem(0, getData("item").getItemStack("Custom"));
         p.getInventory().setItem(4, getData("item").getItemStack("Join"));
         p.getInventory().setItem(8, getData("item").getItemStack("Shop"));
         getData("player").set(p.getUniqueId().toString() + ".name", p.getName());
         if (!getData("player").getBoolean(p.getUniqueId().toString() + ".firstjoin")) {
             String[] listOfKilleffect = {"NullEffect"};
+            String[] listOfKillmessage = {"NullMessage"};
             getData("player").set(p.getUniqueId().toString() + ".firstjoin", true);
             getData("player").set(p.getUniqueId().toString() + ".coin", 0);
             getData("player").set(p.getUniqueId().toString() + ".magicore", 0);
@@ -43,7 +44,9 @@ public class JoinEvent implements Listener {
             getData("player").set(p.getUniqueId().toString() + ".wincount", 0);
             getData("player").set(p.getUniqueId().toString() + ".customkit.select", "null");
             getData("player").set(p.getUniqueId().toString() + ".killeffect", "NullEffect");
+            getData("player").set(p.getUniqueId().toString() + ".killmessage", "NullMessage");
             getData("player").set(p.getUniqueId().toString() + ".have.killeffect", Arrays.asList(listOfKilleffect));
+            getData("player").set(p.getUniqueId().toString() + ".have.killmessage", Arrays.asList(listOfKillmessage));
             for (int i = 0; i < 3; i++){
                 List<String> list = new ArrayList<>();
                 list.add("first");
@@ -66,12 +69,12 @@ public class JoinEvent implements Listener {
     @EventHandler
     public void QuitEvent(PlayerQuitEvent e){
         Player p = e.getPlayer();
-        Join.JoinPlayer.remove(p);
-        Join.GamePlayer.remove(p);
-        Join.Spectator.remove(p);
-        Join.Alive.remove(p);
+        GameMain.JoinPlayer.remove(p);
+        GameMain.GamePlayer.remove(p);
+        GameMain.Spectator.remove(p);
+        GameMain.Alive.remove(p);
         if (Alive.size() == 1) {
-            Join.GameEnd("Normal");
+            GameMain.GameEnd("Normal");
         }
     }
 }
