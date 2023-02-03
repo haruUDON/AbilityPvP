@@ -1,7 +1,7 @@
-name: MagicStick
+name: AbilityPvP
 version: '${project.version}'
-main: haruudon.udon.magicstick.MagicStick
-prefix: MagicStick
+main: haruudon.udon.abilitypvp.AbilityPvP
+prefix: AbilityPvP
 authors: [ haruUDON ]
 description: 使い方
 
@@ -11,7 +11,16 @@ commands:
     aliases: [ta]
   test:
     description: テスト
-  crate:
+  gacha:
     description: ガチャブロックの付与
   hub:
     description: ロビーにテレポート
+  coin:
+    description: プレイヤーの所持コインを操作します。
+    usage: 使用方法 /coin [add/remove] [数値] [プレイヤー名]
+  magicore:
+    description: プレイヤーの所持魔法の鉱石を操作します。
+    usage: 使用方法 /magicore [add/remove] [数値] [プレイヤー名]
+  magicdust:
+    description: プレイヤーの所持魔法の粉を操作します。
+    usage: 使用方法 /magicdust [add/remove] [数値] [プレイヤー名]

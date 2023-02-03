@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>haruudon.udon</groupId>
-    <artifactId>MagicStick</artifactId>
-    <version>1.0</version>
+    <artifactId>AbilityPvP</artifactId>
+    <version>2.0</version>
     <packaging>jar</packaging>
 
-    <name>MagicStick</name>
+    <name>AbilityPvP</name>
 
     <description>使い方</description>
     <properties>
@@ -66,6 +66,10 @@
             <id>minecraft-repo</id>
             <url>https://libraries.minecraft.net/</url>
         </repository>
+        <repository>
+            <id>md_5-public</id>
+            <url>https://repo.md-5.net/content/groups/public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -79,6 +83,12 @@
             <groupId>com.mojang</groupId>
             <artifactId>authlib</artifactId>
             <version>1.5.21</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>LibsDisguises</groupId>
+            <artifactId>LibsDisguises</artifactId>
+            <version>10.0.31</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

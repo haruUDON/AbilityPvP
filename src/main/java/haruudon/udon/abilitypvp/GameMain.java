@@ -1,4 +1,4 @@
-package haruudon.udon.magicstick;
+package haruudon.udon.abilitypvp;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -13,9 +13,9 @@ import org.bukkit.scoreboard.Team;
 
 import java.util.*;
 
-import static haruudon.udon.magicstick.MagicStick.*;
-import static haruudon.udon.magicstick.cooldown.Cooldown.Cooldowns;
-import static haruudon.udon.magicstick.cooldown.Cooldown.DownAbility;
+import static haruudon.udon.abilitypvp.AbilityPvP.*;
+import static haruudon.udon.abilitypvp.cooldown.Cooldown.Cooldowns;
+import static haruudon.udon.abilitypvp.cooldown.Cooldown.DownAbility;
 
 public class GameMain {
 
@@ -61,13 +61,13 @@ public class GameMain {
                                     this.cancel();
                                 } else if (StartGameTimer == 20 || StartGameTimer == 15 || StartGameTimer == 10
                                         || StartGameTimer == 5 || StartGameTimer == 4 || StartGameTimer == 3 || StartGameTimer == 2 || StartGameTimer == 1) {
-                                    for (Player join : JoinPlayer) {
+                                    for (Player join : Bukkit.getOnlinePlayers()) {
                                         join.sendMessage(ChatColor.YELLOW + "" + StartGameTimer + "秒後にゲームを開始します");
                                     }
                                 }
                                 StartGameTimer -= 1;
                             }
-                        }.runTaskTimer(MagicStick.getPlugin(), 0, 20L);
+                        }.runTaskTimer(AbilityPvP.getPlugin(), 0, 20L);
                     }
                 } else {
                     p.sendMessage(ChatColor.RED + "ゲーム参加者が最大のためゲームに参加できません");
@@ -110,10 +110,11 @@ public class GameMain {
         int list = 0;
         for (Player player : GamePlayer){
             KillCount.put(player, 0);
-            haruudon.udon.magicstick.Scoreboard.Remove(player);
+            haruudon.udon.abilitypvp.Scoreboard.Remove(player);
+            player.setGameMode(GameMode.ADVENTURE);
             player.getInventory().clear();
             Location loc = (Location) getData("map").get(Map + LocationList.get(list));
-            player.teleport(loc);
+            Teleport.Teleport(player, loc);
             player.sendTitle(ChatColor.WHITE + "" + ChatColor.BOLD + Map, ChatColor.GREEN + "マップ", 0, 60, 20);
             list += 1;
         }
@@ -129,19 +130,9 @@ public class GameMain {
                     this.cancel();
                 } else if (StartGameTimer == 0) {
                     Timer();
-                    //スコアボード作成
-                    Scoreboard score = Bukkit.getScoreboardManager().getMainScoreboard();
-                    Team t = score.getTeam("hide");
-                    if (t == null){
-                        t = score.registerNewTeam("hide");
-                        t.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
-                        t.setCanSeeFriendlyInvisibles(false);
-                    }
-                    //ここまで
                     for (Player player : GamePlayer) {
                         player.sendTitle(ChatColor.RED + "" + ChatColor.BOLD + "Start!", "", 0, 60, 20);
                         player.sendMessage(ChatColor.GREEN + "アイテムを支給しました");
-                        t.addEntry(player.getName());
                         Mana.setInitialMana(player);
                         String uuid = player.getUniqueId().toString();
                         String select = getData("player").getString(uuid + ".customkit.select");
@@ -177,7 +168,7 @@ public class GameMain {
                 }
                 StartGameTimer -= 1;
             }
-        }.runTaskTimer(MagicStick.getPlugin(), 0, 20);
+        }.runTaskTimer(AbilityPvP.getPlugin(), 0, 20);
     }
 
     public static void GameEnd(String result) {
@@ -203,32 +194,39 @@ public class GameMain {
             case "ShutDown":
                 break;
         }
-        for (Player player : GamePlayer){
-            haruudon.udon.magicstick.Scoreboard.Create(player);
-            t.removeEntry(player.getName());
-            player.setGameMode(GameMode.ADVENTURE);
-            player.teleport(lobby);
-            player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
-            player.getInventory().clear();
-            player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);
-            player.setHealth(20);
-            player.setFoodLevel(20);
-            player.getInventory().setItem(0, getData("item").getItemStack("Custom"));
-            player.getInventory().setItem(4, getData("item").getItemStack("Join"));
-            player.getInventory().setItem(8, getData("item").getItemStack("Shop"));
-            Mana.mana.remove(player.getUniqueId());
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 0);
-            SendResult(player, KillCount.get(player), Winner);
-            KillAndWinCount.addKillCount(player, KillCount.get(player));
-            if (Winner == player) KillAndWinCount.addWinCount(player, 1);
-            KillCount.remove(player);
-            if (Cooldowns.containsKey(player.getUniqueId())){
-                DownAbility.remove(player.getUniqueId());
-                Cooldowns.remove(player.getUniqueId());
+        Player finalWinner = Winner;
+        new BukkitRunnable(){
+            @Override
+            public void run(){
+                for (Player player : GamePlayer){
+                    haruudon.udon.abilitypvp.Scoreboard.Create(player);
+                    player.setGameMode(GameMode.ADVENTURE);
+                    player.teleport(lobby);
+                    player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
+                    player.getInventory().clear();
+                    player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);
+                    player.setHealth(20);
+                    player.setFoodLevel(20);
+                    player.getInventory().setItem(0, getData("item").getItemStack("Custom"));
+                    player.getInventory().setItem(4, getData("item").getItemStack("Join"));
+                    player.getInventory().setItem(8, getData("item").getItemStack("Shop"));
+                    Mana.mana.remove(player.getUniqueId());
+                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 0);
+                    SendResult(player, KillCount.get(player), finalWinner);
+                    KillAndWinCount.addKillCount(player, KillCount.get(player));
+                    if (finalWinner == player) KillAndWinCount.addWinCount(player, 1);
+                    KillCount.remove(player);
+                    if (Cooldowns.containsKey(player.getUniqueId())){
+                        DownAbility.remove(player.getUniqueId());
+                        Cooldowns.remove(player.getUniqueId());
+                    }
+                    t.removeEntry(player.getName());
+                }
+                GamePlayer.clear();
+                Alive.clear();
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "kill @e[type=item]");
             }
-        }
-        GamePlayer.clear();
-        Alive.clear();
+        }.runTaskLater(AbilityPvP.getPlugin(), 1);
     }
 
     public static void Timer() {
@@ -252,26 +250,72 @@ public class GameMain {
                 }
                 Timer -= 1;
             }
-        }.runTaskTimer(MagicStick.getPlugin(), 0, 20L);
+        }.runTaskTimer(AbilityPvP.getPlugin(), 0, 20L);
     }
 
     public static void SendResult(Player p, int kill, Player winner){
+        String uuidS = p.getUniqueId().toString();
+        int level = getData("player").getInt(uuidS + ".levels.level");
+        int exp = getData("player").getInt(uuidS + ".levels.exp");
+        int reqExp = getData("player").getInt(uuidS + ".levels.req");
+        int getExp = 10 + (10 * kill);
         int addCoin = 250 + (100 * kill);
-        if (winner == p) addCoin += 500;
-        CoinAndMagicOre.addCoin(p, addCoin);
+        if (winner == p) {
+            addCoin += 300;
+            getExp += 15;
+        }
+        CoinAndMagicOre.addItems(p, "coin", addCoin);
         p.sendMessage(ChatColor.GOLD + "<" + ChatColor.YELLOW + "--------------------------------------------------" + ChatColor.GOLD  + ">");
-        p.sendMessage("");
         p.sendMessage("");
         if (winner == null) {
             p.sendMessage("                    " + ChatColor.YELLOW + "勝者: " + ChatColor.WHITE + "なし");
         } else p.sendMessage("                    " + ChatColor.YELLOW + "勝者: " + ChatColor.WHITE + winner.getName());
         p.sendMessage("");
         p.sendMessage("");
-        p.sendMessage("                    " + ChatColor.GREEN + "キル数: " + ChatColor.WHITE + kill);
+        p.sendMessage("                    " + ChatColor.DARK_RED + "キル数: " + ChatColor.WHITE + kill);
         p.sendMessage("");
         p.sendMessage("                    " + ChatColor.GOLD + "獲得コイン: " + ChatColor.WHITE + addCoin);
-        p.sendMessage("");
+        p.sendMessage("                    " + ChatColor.GREEN + "獲得経験値: " + ChatColor.WHITE + getExp);
         p.sendMessage("");
         p.sendMessage(ChatColor.GOLD + "<" + ChatColor.YELLOW + "--------------------------------------------------" + ChatColor.GOLD  + ">");
+
+        exp += getExp;
+        if (exp >= reqExp){
+            int getMagicOre = 0;
+            level++;
+            exp -= reqExp;
+            reqExp *= 1.5;
+            getData("player").set(uuidS + ".levels.level", level);
+            getData("player").set(uuidS + ".levels.exp", exp);
+            getData("player").set(uuidS + ".levels.req", reqExp);
+            savePlayerData();
+            getMagicOre += 5;
+            if (level % 5 == 0) {
+                getMagicOre += 10;
+            }
+            int finalGetMagicOre = getMagicOre;
+            CoinAndMagicOre.addItems(p, "magicore", getMagicOre);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                    p.sendMessage(ChatColor.GOLD + "<" + ChatColor.YELLOW + "--------------------------------------------------" + ChatColor.GOLD  + ">");
+                    p.sendMessage("");
+                    p.sendMessage("                    " + ChatColor.GREEN + "" + ChatColor.BOLD + "レベルアップ");
+                    p.sendMessage("");
+                    p.sendMessage("                    " + ChatColor.DARK_GREEN + "現在レベル: " + ChatColor.WHITE + getData("player").getInt(uuidS + ".levels.level"));
+                    p.sendMessage("                    " + ChatColor.DARK_GREEN + "必要経験値: " + ChatColor.WHITE + getData("player").getInt(uuidS + ".levels.exp") + "/" + getData("player").getInt(uuidS + ".levels.req"));
+                    p.sendMessage("");
+                    p.sendMessage("                    " + ChatColor.DARK_PURPLE + "獲得魔法の鉱石: " + ChatColor.WHITE + finalGetMagicOre);
+                    p.sendMessage("");
+                    p.sendMessage(ChatColor.GOLD + "<" + ChatColor.YELLOW + "--------------------------------------------------" + ChatColor.GOLD  + ">");
+                }
+            }.runTaskLater(AbilityPvP.getPlugin(), 30);
+        } else {
+            getData("player").set(uuidS + ".levels.level", level);
+            getData("player").set(uuidS + ".levels.exp", exp);
+            getData("player").set(uuidS + ".levels.req", reqExp);
+            savePlayerData();
+        }
     }
 }

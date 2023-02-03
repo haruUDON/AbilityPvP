@@ -1,13 +1,14 @@
-package haruudon.udon.magicstick.commands;
+package haruudon.udon.abilitypvp.commands;
 
-import haruudon.udon.magicstick.GameMain;
+import haruudon.udon.abilitypvp.GameMain;
+import haruudon.udon.abilitypvp.Teleport;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static haruudon.udon.magicstick.MagicStick.getData;
+import static haruudon.udon.abilitypvp.AbilityPvP.getData;
 
 public class Hub implements CommandExecutor {
     @Override
