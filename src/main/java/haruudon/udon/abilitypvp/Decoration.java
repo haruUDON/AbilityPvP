@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import static haruudon.udon.abilitypvp.AbilityPvP.getData;
 
@@ -33,7 +34,7 @@ public class Decoration {
         String message = getData("player").getString(attacker.getUniqueId().toString() + ".killmessage");
         String send = getData("killmessage").getString(message + ".message");
         String title = getData("killmessage").getString(message + ".title");
-        ArrayList<Player> game = GameMain.GamePlayer;
+        ArrayList<Player> game = Objects.requireNonNull(GameRoomManager.getRoom(attacker)).getPlayers();
         game.forEach(player -> player.sendMessage(ChatColor.GRAY + victim.getName() + ChatColor.YELLOW + " は " + ChatColor.GRAY + attacker.getName() + ChatColor.YELLOW + " " + send));
         victim.sendTitle(ChatColor.RED + "" + ChatColor.BOLD + title, ChatColor.GRAY + "あなたは現在観戦者です", 0, 100, 20);
     }

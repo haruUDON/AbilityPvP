@@ -18,78 +18,78 @@ import static haruudon.udon.abilitypvp.cooldown.Cooldown.Cooldowns;
 import static haruudon.udon.abilitypvp.cooldown.Cooldown.DownAbility;
 
 public class GameMain {
-
-    public static ArrayList<Player> JoinPlayer;
-    public static ArrayList<Player> GamePlayer;
-    public static ArrayList<Player> Alive;
-    public static ArrayList<Player> Spectator;
     public static HashMap<Player, Integer> KillCount;
 
     public static void setupJoinPlayer() {
-        JoinPlayer = new ArrayList<>();
-        GamePlayer = new ArrayList<>();
-        Alive = new ArrayList<>();
-        Spectator = new ArrayList<>();
         KillCount = new HashMap<>();
     }
 
-    public static void JoinPlayer(Player p){
-        if (!(JoinPlayer.contains(p)) && !(GamePlayer.contains(p))){
+    public static Boolean JoinPlayer(Player p, GameRoom g){
+        if (!GameRoomManager.containsGamePlayer(p)){
             String select = getData("player").getString(p.getUniqueId().toString() + ".customkit.select");
             if (!(select == null) && getData("player").getBoolean(p.getUniqueId().toString() + ".customkit." + select + ".use")) {
-                if (JoinPlayer.size() < 4) {
-                    JoinPlayer.add(p);
-                    p.getInventory().clear();
-                    p.getInventory().setItem(8, getData("item").getItemStack("Quit"));
-                    for (Player join : JoinPlayer) {
-                        join.sendMessage(ChatColor.GRAY + p.getName() + ChatColor.YELLOW + "が参加しました (" + ChatColor.AQUA + JoinPlayer.size() + ChatColor.YELLOW + "/"
-                                + ChatColor.AQUA + "4" + ChatColor.YELLOW + ")");
-                    }
-                    if (JoinPlayer.size() == 2) {
-                        new BukkitRunnable() {
-                            int StartGameTimer = 20;
+                if (!g.getIsGaming()){
+                    if (g.getPlayers().size() < 4){
+                        g.addPlayer(p);
+                        p.getInventory().clear();
+                        p.getInventory().setItem(8, getData("item").getItemStack("Quit"));
+                        for (Player join : g.getPlayers()) {
+                            join.sendMessage(ChatColor.GRAY + p.getName() + ChatColor.YELLOW + "が参加しました (" + ChatColor.AQUA + g.getPlayers().size() + ChatColor.YELLOW + "/"
+                                    + ChatColor.AQUA + "4" + ChatColor.YELLOW + ")");
+                        }
+                        if (g.getPlayers().size() == 2) {
+                            new BukkitRunnable() {
+                                int StartGameTimer = 20;
 
-                            @Override
-                            public void run() {
-                                if (JoinPlayer.size() < 2) {
-                                    this.cancel();
-                                } else if (StartGameTimer == 0) {
-                                    GamePlayer.addAll(JoinPlayer);
-                                    Alive.addAll(JoinPlayer);
-                                    JoinPlayer.clear();
-                                    GameStart();
-                                    this.cancel();
-                                } else if (StartGameTimer == 20 || StartGameTimer == 15 || StartGameTimer == 10
-                                        || StartGameTimer == 5 || StartGameTimer == 4 || StartGameTimer == 3 || StartGameTimer == 2 || StartGameTimer == 1) {
-                                    for (Player join : Bukkit.getOnlinePlayers()) {
-                                        join.sendMessage(ChatColor.YELLOW + "" + StartGameTimer + "秒後にゲームを開始します");
+                                @Override
+                                public void run() {
+                                    if (g.getPlayers().size() < 2) {
+                                        this.cancel();
+                                    } else if (StartGameTimer == 0) {
+                                        g.getPlayers().forEach(g::addAlive);
+                                        GameStart(g);
+                                        this.cancel();
+                                    } else if (StartGameTimer == 20 || StartGameTimer == 15 || StartGameTimer == 10
+                                            || StartGameTimer == 5 || StartGameTimer == 4 || StartGameTimer == 3 || StartGameTimer == 2 || StartGameTimer == 1) {
+                                        for (Player join : g.getPlayers()) {
+                                            join.sendMessage(ChatColor.YELLOW + "" + StartGameTimer + "秒後にゲームを開始します");
+                                        }
                                     }
+                                    StartGameTimer -= 1;
                                 }
-                                StartGameTimer -= 1;
-                            }
-                        }.runTaskTimer(AbilityPvP.getPlugin(), 0, 20L);
+                            }.runTaskTimer(AbilityPvP.getPlugin(), 0, 20L);
+                        }
+                    } else {
+                        p.sendMessage(ChatColor.RED + "部屋の人数が最大に達しているためゲームに参加できません");
+                        p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                        return false;
                     }
                 } else {
-                    p.sendMessage(ChatColor.RED + "ゲーム参加者が最大のためゲームに参加できません");
+                    p.sendMessage(ChatColor.RED + "その部屋は試合中のため参加できません");
                     p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                    return false;
                 }
             } else {
                 p.sendMessage(ChatColor.RED + "使用可能なキットを選択してください");
                 p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+                return false;
             }
         } else {
             p.sendMessage(ChatColor.RED + "あなたはすでにゲームに参加しています");
             p.playSound(p.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
+            return false;
         }
+        return true;
     }
 
     public static void QuitPlayer(Player p){
-        if (JoinPlayer.contains(p)){
-            for (Player join : JoinPlayer) {
-                join.sendMessage(ChatColor.GRAY + p.getName() + ChatColor.YELLOW + "が退出しました (" + ChatColor.AQUA + (JoinPlayer.size() - 1) + ChatColor.YELLOW + "/"
+        GameRoom gameRoom = GameRoomManager.getRoom(p);
+        if (gameRoom != null){
+            for (Player join : gameRoom.getPlayers()) {
+                join.sendMessage(ChatColor.GRAY + p.getName() + ChatColor.YELLOW + "が退出しました (" + ChatColor.AQUA + (gameRoom.getPlayers().size() - 1) + ChatColor.YELLOW + "/"
                         + ChatColor.AQUA + "4" + ChatColor.YELLOW + ")");
             }
-            JoinPlayer.remove(p);
+            gameRoom.removePlayer(p);
             p.getInventory().clear();
             p.getInventory().setItem(0, getData("item").getItemStack("Custom"));
             p.getInventory().setItem(4, getData("item").getItemStack("Join"));
@@ -100,7 +100,8 @@ public class GameMain {
         }
     }
 
-    public static void GameStart(){
+    public static void GameStart(GameRoom g){
+        g.setIsGaming(true);
         List<String> Maps = getData("map").getStringList("All");
         Random random = new Random();
         int randomMap = random.nextInt(Maps.size());
@@ -108,7 +109,7 @@ public class GameMain {
         List<String> LocationList = new ArrayList<>(Arrays.asList(".location1", ".location2", ".location3", ".location4"));
         Collections.shuffle(LocationList);
         int list = 0;
-        for (Player player : GamePlayer){
+        for (Player player : g.getPlayers()){
             KillCount.put(player, 0);
             haruudon.udon.abilitypvp.Scoreboard.Remove(player);
             player.setGameMode(GameMode.ADVENTURE);
@@ -118,19 +119,19 @@ public class GameMain {
             player.sendTitle(ChatColor.WHITE + "" + ChatColor.BOLD + Map, ChatColor.GREEN + "マップ", 0, 60, 20);
             list += 1;
         }
-        GameStartTimer();
+        GameStartTimer(g);
     }
 
-    public static void GameStartTimer() {
+    public static void GameStartTimer(GameRoom g) {
         new BukkitRunnable() {
             int StartGameTimer = 7;
             @Override
             public void run() {
-                if (GamePlayer.isEmpty()){
+                if (g.getPlayers().isEmpty()){
                     this.cancel();
                 } else if (StartGameTimer == 0) {
-                    Timer();
-                    for (Player player : GamePlayer) {
+                    Timer(g);
+                    for (Player player : g.getPlayers()) {
                         player.sendTitle(ChatColor.RED + "" + ChatColor.BOLD + "Start!", "", 0, 60, 20);
                         player.sendMessage(ChatColor.GREEN + "アイテムを支給しました");
                         Mana.setInitialMana(player);
@@ -158,11 +159,11 @@ public class GameMain {
                         this.cancel();
                     }
                 } else if (StartGameTimer == 5 || StartGameTimer == 4) {
-                    for (Player player : GamePlayer) {
+                    for (Player player : g.getPlayers()) {
                         player.sendTitle(ChatColor.YELLOW + "" + ChatColor.BOLD + StartGameTimer, "", 0, 60, 20);
                     }
                 } else if (StartGameTimer == 3 || StartGameTimer == 2 || StartGameTimer == 1) {
-                    for (Player player : GamePlayer) {
+                    for (Player player : g.getPlayers()) {
                         player.sendTitle(ChatColor.RED + "" + ChatColor.BOLD + StartGameTimer, "", 0, 60, 20);
                     }
                 }
@@ -171,23 +172,24 @@ public class GameMain {
         }.runTaskTimer(AbilityPvP.getPlugin(), 0, 20);
     }
 
-    public static void GameEnd(String result) {
+    public static void GameEnd(String result, GameRoom g) {
+        ArrayList<Player> players = g.getPlayers();
         //スコアボード
         Scoreboard score = Bukkit.getScoreboardManager().getMainScoreboard();
         Team t = score.getTeam("hide");
         //ここまで
         Location lobby = (Location) getData("map").get("MainLobby.location");
-        Spectator.clear();
+        g.clearSpectator();
         Player Winner = null;
         switch (result) {
             case "Normal":
-                for (Player player : GamePlayer) {
-                    Winner = Alive.get(0);
+                for (Player player : players) {
+                    Winner = g.getAlive().get(0);
                     player.sendTitle(ChatColor.WHITE + "" + ChatColor.BOLD + Winner.getName(), ChatColor.YELLOW + "勝者", 0, 60, 20);
                 }
                 break;
             case "TimeUp":
-                for (Player player : GamePlayer) {
+                for (Player player : players) {
                     player.sendTitle(ChatColor.WHITE + "" + ChatColor.BOLD + "なし", ChatColor.YELLOW + "勝者", 0, 60, 20);
                 }
                 break;
@@ -198,7 +200,7 @@ public class GameMain {
         new BukkitRunnable(){
             @Override
             public void run(){
-                for (Player player : GamePlayer){
+                for (Player player : players){
                     haruudon.udon.abilitypvp.Scoreboard.Create(player);
                     player.setGameMode(GameMode.ADVENTURE);
                     player.teleport(lobby);
@@ -222,29 +224,30 @@ public class GameMain {
                     }
                     t.removeEntry(player.getName());
                 }
-                GamePlayer.clear();
-                Alive.clear();
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "kill @e[type=item]");
+                g.clearPlayers();
+                g.clearAlive();
+                g.setIsGaming(false);
+//                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "kill @e[type=item]");
             }
         }.runTaskLater(AbilityPvP.getPlugin(), 1);
     }
 
-    public static void Timer() {
+    public static void Timer(GameRoom g) {
         new BukkitRunnable() {
             int Timer = 600;
             @Override
             public void run() {
-                if (GamePlayer.isEmpty()){
+                if (g.getPlayers().isEmpty()){
                     this.cancel();
                 } else if (Timer == 0) {
-                    GameEnd("TimeUp");
+                    GameEnd("TimeUp", g);
                     this.cancel();
                 } else if (Timer > 60) {
-                    for (Player player : GamePlayer) {
+                    for (Player player : g.getPlayers()) {
                         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.WHITE + "残り時間: " + (Timer / 60) + " 分"));
                     }
                 } else {
-                    for (Player player : GamePlayer) {
+                    for (Player player : g.getPlayers()) {
                         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.WHITE + "残り時間: " + Timer + " 秒"));
                     }
                 }

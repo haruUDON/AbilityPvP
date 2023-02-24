@@ -1,6 +1,7 @@
 package haruudon.udon.abilitypvp.events;
 
 import haruudon.udon.abilitypvp.AbilityPvP;
+import haruudon.udon.abilitypvp.GameRoomManager;
 import haruudon.udon.abilitypvp.Mana;
 import haruudon.udon.abilitypvp.cooldown.Cooldown;
 import org.bukkit.*;
@@ -18,8 +19,9 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import java.util.Objects;
+
 import static haruudon.udon.abilitypvp.AbilityPvP.getData;
-import static haruudon.udon.abilitypvp.GameMain.Alive;
 import static haruudon.udon.abilitypvp.events.AbilityEvent.ShapeMob;
 
 public class WeaponEvent implements Listener {
@@ -94,7 +96,7 @@ public class WeaponEvent implements Listener {
                         for (Player another : playerLoc.getChunk().getWorld().getPlayers()) {
                             if (another.getLocation().distance(playerLoc) < 4){
                                 if (another != (p)) {
-                                    if (Alive.contains(another)) {
+                                    if (Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive().contains(another)) {
                                         p.playSound(p.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1, 1);
                                         world.playSound(another.getLocation(), Sound.ENTITY_LIGHTNING_IMPACT, 1, 1);
                                         another.damage(1, p);

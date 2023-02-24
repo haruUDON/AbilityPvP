@@ -1,6 +1,7 @@
 package haruudon.udon.abilitypvp.events;
 
 import haruudon.udon.abilitypvp.GameMain;
+import haruudon.udon.abilitypvp.GameRoomManager;
 import haruudon.udon.abilitypvp.Scoreboard;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -14,10 +15,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scoreboard.Team;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static haruudon.udon.abilitypvp.AbilityPvP.*;
-import static haruudon.udon.abilitypvp.GameMain.Alive;
 
 public class JoinEvent implements Listener {
     @EventHandler
@@ -60,12 +61,11 @@ public class JoinEvent implements Listener {
         Player p = e.getPlayer();
         org.bukkit.scoreboard.Scoreboard score = Bukkit.getScoreboardManager().getMainScoreboard();
         Team t = score.getTeam("hide");
-        GameMain.JoinPlayer.remove(p);
-        GameMain.GamePlayer.remove(p);
-        GameMain.Spectator.remove(p);
-        GameMain.Alive.remove(p);
-        if (Alive.size() == 1) {
-            GameMain.GameEnd("Normal");
+        Objects.requireNonNull(GameRoomManager.getRoom(p)).removePlayer(p);
+        Objects.requireNonNull(GameRoomManager.getRoom(p)).removeAlive(p);
+        Objects.requireNonNull(GameRoomManager.getRoom(p)).removeSpectator(p);
+        if (Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive().size() == 1) {
+            GameMain.GameEnd("Normal", Objects.requireNonNull(GameRoomManager.getRoom(p)));
         }
         t.removeEntry(p.getName());
     }

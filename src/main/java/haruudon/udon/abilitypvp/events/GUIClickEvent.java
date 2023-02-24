@@ -1,9 +1,7 @@
 package haruudon.udon.abilitypvp.events;
 
-import haruudon.udon.abilitypvp.CoinAndMagicOre;
-import haruudon.udon.abilitypvp.GUIManager;
+import haruudon.udon.abilitypvp.*;
 import haruudon.udon.abilitypvp.gacha.Gacha;
-import haruudon.udon.abilitypvp.GameMain;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -49,8 +47,7 @@ public class GUIClickEvent implements Listener {
                             getData("player").set(uuid + ".customkit.select", th.get(i - 1));
                             savePlayerData();
                             p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-                            p.closeInventory();
-                            GameMain.JoinPlayer(p);
+                            GUIManager.JoinRoomMenu(p);
                         } else {
                             p.closeInventory();
                             p.sendMessage(ChatColor.RED + "キットのセットアップが完了していません");
@@ -62,7 +59,26 @@ public class GUIClickEvent implements Listener {
                     p.closeInventory();
                 }
                 e.setCancelled(true);
-            } else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_RED + "本当に初期化しますか？")){
+            }else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_GRAY + "部屋")){
+                if (e.getCurrentItem().getType() == Material.BARRIER){
+                    GUIManager.SelectCustomKit(p);
+                    e.setCancelled(true);
+                    return;
+                }
+                GameRoom gameRoom = null;
+                if (e.getSlot() == 9) gameRoom = GameRoomManager.getGameRooms().get(0);
+                else if (e.getSlot() == 11) gameRoom = GameRoomManager.getGameRooms().get(1);
+                else if (e.getSlot() == 13) gameRoom = GameRoomManager.getGameRooms().get(2);
+                else if (e.getSlot() == 15) gameRoom = GameRoomManager.getGameRooms().get(3);
+                else if (e.getSlot() == 17) gameRoom = GameRoomManager.getGameRooms().get(4);
+                if (gameRoom != null){
+                    if (GameMain.JoinPlayer(p, gameRoom)){
+                        p.closeInventory();
+                        return;
+                    }
+                }
+                e.setCancelled(true);
+            }else if (e.getClickedInventory().getTitle().equalsIgnoreCase(ChatColor.DARK_RED + "本当に初期化しますか？")){
                 if (e.getSlot() == 2){ //YES
                     String[] listOfType = {"NullType", "NullType"};
                     String[] listOfAbility = {"NullAbility", "NullAbility", "NullAbility", "NullAbility"};

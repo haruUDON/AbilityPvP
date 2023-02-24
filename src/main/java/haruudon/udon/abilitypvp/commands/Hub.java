@@ -1,6 +1,7 @@
 package haruudon.udon.abilitypvp.commands;
 
 import haruudon.udon.abilitypvp.GameMain;
+import haruudon.udon.abilitypvp.GameRoomManager;
 import haruudon.udon.abilitypvp.Teleport;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -14,8 +15,7 @@ public class Hub implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player p){
-            if (GameMain.GamePlayer.contains(p)) return false;
-            if (GameMain.Spectator.contains(p)) return false;
+            if (GameRoomManager.containsGamePlayer(p)) return false;
             Location loc = (Location) getData("map").get("MainLobby.location");
             p.teleport(loc);
         }

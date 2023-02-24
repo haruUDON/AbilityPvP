@@ -216,7 +216,7 @@ public class AbilityEvent implements Listener {
                     removeMana(p, 5);
                     Cooldown.setCooldown(p, getData("ability").getInt("VampireHeart.cooltime"), "VampireHeart", p.getInventory().getHeldItemSlot());
                     // アビリティの処理
-                    for (Player other : Alive) {
+                    for (Player other : Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive()) {
                         if (other.getWorld() == p.getWorld() && other.getLocation().distanceSquared(p.getLocation()) <= 16) {
                             if (!(other == p)) {
                                 if (other.getWorld() == p.getWorld()) {
@@ -281,7 +281,7 @@ public class AbilityEvent implements Listener {
                             for (Player player : loc.getChunk().getWorld().getPlayers()) { //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
                                 if (player.getLocation().distance(loc) < 2) { //エンティティの半径1.5の範囲内にlocがあるか確認
                                     if (player != (p)) { //エンティティがクリックしたプレイヤーじゃないか
-                                        if (Alive.contains(player)) { //エンティティが生きているかどうか
+                                        if (Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive().contains(player)) { //エンティティが生きているかどうか
                                             p.getWorld().spawnParticle(Particle.SNOWBALL, loc, 50, 0, 0, 0, 1);
                                             player.getWorld().spawnParticle(Particle.BLOCK_CRACK, player.getLocation().add(0, 1, 0), 100, 0.5, 1, 0.5, 0, new MaterialData(Material.ICE));
                                             player.getWorld().playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1, 0);
@@ -460,7 +460,7 @@ public class AbilityEvent implements Listener {
                         for (Player player : loc.getChunk().getWorld().getPlayers()) { //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
                             if (player.getLocation().distance(loc) < 1.5){ //エンティティの半径1.5の範囲内にlocがあるか確認
                                 if (player != (p)) { //エンティティがクリックしたプレイヤーじゃないか
-                                    if (Alive.contains(player)) { //エンティティが生きているかどうか
+                                    if (Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive().contains(player)) { //エンティティが生きているかどうか
                                         Cooldown.setCooldown(p, (getData("ability").getInt("SkullSniper.cooltime") - 20), "SkullSniper", p.getInventory().getHeldItemSlot());
                                         p.getWorld().spawnParticle(Particle.CRIT, loc, 50, 0, 0, 0, 1);
                                         player.getWorld().spawnParticle(Particle.BLOCK_CRACK, player.getLocation(), 100, 0.5, 1, 0.5, 0, new MaterialData(Material.BONE_BLOCK));
@@ -637,7 +637,7 @@ public class AbilityEvent implements Listener {
                         for (Player player : loc.getChunk().getWorld().getPlayers()){ //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
                             if (player.getLocation().distance(loc) < 2) { //エンティティの半径1.5の範囲内にlocがあるか確認
                                 if (player != (p)) { //エンティティがクリックしたプレイヤーじゃないか
-                                    if (Alive.contains(player)) { //エンティティが生きているかどうか
+                                    if (Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive().contains(player)) { //エンティティが生きているかどうか
                                         double Tx = direction.getX() * 1;
                                         double Ty = direction.getY() * 2;
                                         double Tz = direction.getZ() * 1;
@@ -689,7 +689,7 @@ public class AbilityEvent implements Listener {
                     p.getWorld().spawnParticle(Particle.SMOKE_LARGE, p.getLocation(), 100, 2, 1, 2, 0.5);
                     p.getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 5, 0);
                     // アビリティの処理
-                    for (Player other : Alive) {
+                    for (Player other : Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive()) {
                         if (other.getWorld() == p.getWorld() && other.getLocation().distanceSquared(p.getLocation()) <= 35) {
                             if (!(other == p)) {
                                 if (other.getWorld() == p.getWorld()) {
@@ -746,7 +746,7 @@ public class AbilityEvent implements Listener {
                                 for (Player player : dropItem.getLocation().getChunk().getWorld().getPlayers()){ //チャンク内のエンティティの数だけループする。エンティティをentity変数に入れる
                                     if (player.getLocation().distance(dropItem.getLocation()) < 2) { //エンティティの半径1.5の範囲内にlocがあるか確認
                                         if (player != (p)) { //エンティティがクリックしたプレイヤーじゃないか
-                                            if (Alive.contains(player)) { //エンティティが生きているかどうか
+                                            if (Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive().contains(player)) { //エンティティが生きているかどうか
                                                 if (checkUseMana(player, 2)){
                                                     removeMana(player, 2);
                                                     addMana(p, 2);
@@ -879,7 +879,7 @@ public class AbilityEvent implements Listener {
                                 for (Player player : loc.getChunk().getWorld().getPlayers()){
                                     if (player.getLocation().distance(loc) < 2) { //エンティティの半径1.5の範囲内にlocがあるか確認
                                         if (player != (p)) { //エンティティがクリックしたプレイヤーじゃないか
-                                            if (Alive.contains(player)) { //エンティティが生きているかどうか
+                                            if (Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive().contains(player)) { //エンティティが生きているかどうか
                                                 player.damage(8, p);
                                             }
                                         }
@@ -940,7 +940,7 @@ public class AbilityEvent implements Listener {
                                 }
                             }
                         }
-                        for (Player other : Alive) {
+                        for (Player other : Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive()) {
                             if (other.getWorld() == p.getWorld() && other.getLocation().distanceSquared(p.getLocation()) <= 25){
                                 if (!(other == p)) {
                                     if (other.getWorld() == p.getWorld()) {
@@ -999,7 +999,7 @@ public class AbilityEvent implements Listener {
                                 dropItem.remove();
                                 p.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, dropItem.getLocation(), 1, 0, 0, 0, 0.1);
                                 p.getWorld().playSound(dropItem.getLocation(), Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE, 3, 2);
-                                for (Player other : Alive) {
+                                for (Player other : Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive()) {
                                     if (other.getWorld() == dropItem.getWorld() && other.getLocation().distanceSquared(dropItem.getLocation()) <= 9){
                                         if (!(other == p)) {
                                             if (other.getWorld() == dropItem.getWorld()) {
@@ -1014,7 +1014,7 @@ public class AbilityEvent implements Listener {
                                 this.cancel();
                             } else if (delete >= 30){
                                 p.getWorld().spawnParticle(Particle.SMOKE_NORMAL, dropItem.getLocation().add(0, 0.5, 0), 1, 0, 0, 0, 0);
-                                for (Player other : Alive) {
+                                for (Player other : Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive()) {
                                     if (other.getWorld() == dropItem.getWorld() && other.getLocation().distanceSquared(dropItem.getLocation()) <= 4) {
                                         if (!(other == p)) {
                                             if (other.getWorld() == dropItem.getWorld()) {
@@ -1088,7 +1088,7 @@ public class AbilityEvent implements Listener {
                         attacker.playSound(attacker.getLocation(), Sound.BLOCK_STONE_PLACE, 1, 1);
                         return;
                     }
-                    if (Alive.contains(victim)) {
+                    if (Objects.requireNonNull(GameRoomManager.getRoom(attacker)).getAlive().contains(victim)) {
                         if (((victim.getHealth() - e.getDamage()) > 0)) {
                             if (checkUseMana(attacker, 11)){
                                 removeMana(attacker, 11);
@@ -1157,7 +1157,7 @@ public class AbilityEvent implements Listener {
                                 p.getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 5, 0.7f);
                                 p.getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 5, 1);
                                 p.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, p.getLocation().add(0, 1, 0), 10, 1, 1, 1, 1);
-                                for (Player other : Alive){
+                                for (Player other : Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive()){
                                     if (other.getWorld() == p.getWorld() && other.getLocation().distanceSquared(p.getLocation()) <= 16){
                                         if (other != p) {
                                             if (other.getWorld() == p.getWorld()) {
@@ -1230,7 +1230,7 @@ public class AbilityEvent implements Listener {
                         t.setCanSeeFriendlyInvisibles(false);
                     }
                     t.addEntry(p.getName());
-                    for (Player players : GamePlayer) {
+                    for (Player players : Objects.requireNonNull(GameRoomManager.getRoom(p)).getPlayers()) {
                         players.setScoreboard(score);
                     }
                     Team finalT = t;
@@ -1356,7 +1356,7 @@ public class AbilityEvent implements Listener {
                 if (checkUseMana(p, 8)){
                     removeMana(p, 8);
                     Cooldown.setCooldown(p, getData("ability").getInt("PoisonArea.cooltime"), "PoisonArea", p.getInventory().getHeldItemSlot());
-                    final Location loc = p.getLocation();
+                    final Location loc = p.getEyeLocation();
                     final Vector direction = loc.getDirection();
                     for (int i = 0; i < 10; i++){
                         double x = direction.getX() * i;
@@ -1404,7 +1404,7 @@ public class AbilityEvent implements Listener {
                 e.setCancelled(true);
                 if (checkUseMana(p, 13)) {
                     List<Player> players = new ArrayList<>();
-                    for (Player loops : Alive){
+                    for (Player loops : Objects.requireNonNull(GameRoomManager.getRoom(p)).getAlive()){
                         if (loops.getPotionEffect(PotionEffectType.POISON) != null){
                             players.add(loops);
                         }
@@ -1460,7 +1460,7 @@ public class AbilityEvent implements Listener {
                         DamageCharge.remove(attacker.getUniqueId());
                     }
                 }
-                if (Alive.contains(victim)){
+                if (Objects.requireNonNull(GameRoomManager.getRoom(attacker)).getAlive().contains(victim)){
                     if (((victim.getHealth() - ev.getDamage()) <= 0)){
                         ev.setCancelled(true);
                         if (ShapeMob.containsKey(victim.getUniqueId())){
@@ -1486,16 +1486,16 @@ public class AbilityEvent implements Listener {
                         } else {
                             Mana.mana.remove(victim.getUniqueId());
                             victim.setGameMode(GameMode.SPECTATOR);
-                            Alive.remove(victim);
-                            Spectator.add(victim);
+                            Objects.requireNonNull(GameRoomManager.getRoom(attacker)).removeAlive(victim);
+                            Objects.requireNonNull(GameRoomManager.getRoom(attacker)).addSpectator(victim);
                             Decoration.KillEffect(attacker, victim);
                             Decoration.KillMassage(attacker, victim);
                             victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 1.3F);
                             victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 1F);
                             victim.getWorld().playSound(victim.getLocation(), Sound.BLOCK_METAL_BREAK, 5, 0.7F);
                             KillCount.put(attacker, KillCount.get(attacker) + 1);
-                            if (Alive.size() == 1){
-                                GameMain.GameEnd("Normal");
+                            if (Objects.requireNonNull(GameRoomManager.getRoom(attacker)).getAlive().size() == 1){
+                                GameMain.GameEnd("Normal", Objects.requireNonNull(GameRoomManager.getRoom(attacker)));
                             }
                         }
                     } else {
@@ -1587,7 +1587,7 @@ public class AbilityEvent implements Listener {
     @EventHandler
     public void NoOffHand(PlayerSwapHandItemsEvent e){
         Player p = e.getPlayer();
-        if (!(p.isOp()) || GamePlayer.contains(p)) {
+        if (!(p.isOp()) || GameRoomManager.containsGamePlayer(p)) {
             e.setCancelled(true);
         }
     }
@@ -1595,7 +1595,7 @@ public class AbilityEvent implements Listener {
     @EventHandler
     public void CancelArmorStandSwap(PlayerArmorStandManipulateEvent e){
         Player p = e.getPlayer();
-        if (!(p.isOp()) || GamePlayer.contains(p)) {
+        if (!(p.isOp()) || GameRoomManager.containsGamePlayer(p)) {
             e.setCancelled(true);
         }
     }

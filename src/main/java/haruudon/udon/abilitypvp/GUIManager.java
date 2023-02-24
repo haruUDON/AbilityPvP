@@ -715,4 +715,44 @@ public class GUIManager {
             }
         }.runTaskTimer(AbilityPvP.getPlugin(), 0, 20);
     }
+
+    public static void JoinRoomMenu(Player p){
+        p.playSound(p.getLocation(), Sound.BLOCK_WOOD_BUTTON_CLICK_ON, 1, 1);
+        Inventory inventory = Bukkit.createInventory(p,27, ChatColor.DARK_GRAY + "部屋");
+        ItemStack back = new ItemStack(Material.BARRIER);
+        ItemMeta backMeta = back.getItemMeta();
+        backMeta.setDisplayName(ChatColor.RED + "戻る");
+        back.setItemMeta(backMeta);
+        ItemStack background = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 15);
+        for (int i = 0; i <= 26; i++){
+            inventory.setItem(i, background);
+        }
+        for (int i = 0; i < 5; i++){
+            GameRoom gameRoom = GameRoomManager.getGameRooms().get(i);
+            ArrayList<Player> players = gameRoom.getPlayers();
+            ItemStack room;
+            List<String> lore = new ArrayList<>();
+            lore.add(ChatColor.YELLOW + String.valueOf(players.size()) + " / 4");
+            if (gameRoom.getIsGaming()){
+                room = new ItemStack(Material.RED_SHULKER_BOX);
+                lore.add(ChatColor.RED + "試合中");
+            } else if (players.size() <= 1){
+                room = new ItemStack(Material.WHITE_SHULKER_BOX);
+                lore.add(ChatColor.WHITE + "参加可能");
+            } else if (players.size() <= 3){
+                room = new ItemStack(Material.YELLOW_SHULKER_BOX);
+                lore.add(ChatColor.YELLOW + "参加可能");
+            } else{
+                room = new ItemStack(Material.RED_SHULKER_BOX);
+                lore.add(ChatColor.RED + "参加不可");
+            }
+            ItemMeta meta = room.getItemMeta();
+            meta.setDisplayName(ChatColor.WHITE + "部屋" + (i + 1));
+            meta.setLore(lore);
+            room.setItemMeta(meta);
+            inventory.setItem(i, room);
+        }
+        inventory.setItem(22, back);
+        p.openInventory(inventory);
+    }
 }

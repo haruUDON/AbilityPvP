@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 import static haruudon.udon.abilitypvp.AbilityPvP.getData;
 import static haruudon.udon.abilitypvp.AbilityPvP.savePlayerData;
 
-public class KillAndWinCount {
+public class KillAndWinCount{
     public static void addKillCount(Player p, int add) {
         int killcount = getData("player").getInt(p.getUniqueId().toString() + ".killcount");
         getData("player").set(p.getUniqueId().toString() + ".killcount", killcount + add);

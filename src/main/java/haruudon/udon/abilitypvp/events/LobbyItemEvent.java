@@ -2,6 +2,7 @@ package haruudon.udon.abilitypvp.events;
 
 import haruudon.udon.abilitypvp.GUIManager;
 import haruudon.udon.abilitypvp.GameMain;
+import haruudon.udon.abilitypvp.GameRoomManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -16,9 +17,6 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import static haruudon.udon.abilitypvp.GameMain.GamePlayer;
-import static haruudon.udon.abilitypvp.GameMain.JoinPlayer;
-
 public class LobbyItemEvent implements Listener {
     @EventHandler
     public void RightClickLobbyItem(PlayerInteractEvent e) {
@@ -30,7 +28,7 @@ public class LobbyItemEvent implements Listener {
             ItemMeta itemMeta = item.getItemMeta();
             if (item.getType() == Material.WORKBENCH && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.GOLD + "キットをカスタマイズ")) {
                 e.setCancelled(true);
-                if (!(JoinPlayer.contains(p)) && !(GamePlayer.contains(p))) {
+                if (!GameRoomManager.containsGamePlayer(p)){
                     GUIManager.MainSetAbilityMenu(p);
                 } else {
                     p.sendMessage(ChatColor.RED + "現在は使用できません");
@@ -38,7 +36,7 @@ public class LobbyItemEvent implements Listener {
                 }
             } else if (item.getType() == Material.IRON_SWORD && itemMeta.getDisplayName().equalsIgnoreCase(ChatColor.YELLOW + "ゲームに参加する")) {
                 e.setCancelled(true);
-                if (!(JoinPlayer.contains(p)) && !(GamePlayer.contains(p))) {
+                if (!GameRoomManager.containsGamePlayer(p)){
                     GUIManager.SelectCustomKit(p);
                 } else {
                     p.sendMessage(ChatColor.RED + "あなたはすでにゲームに参加しています");
@@ -57,7 +55,7 @@ public class LobbyItemEvent implements Listener {
     @EventHandler
     public void BreakBlockCancel(BlockBreakEvent e){
         Player p = e.getPlayer();
-        if (!(p.isOp()) || GamePlayer.contains(p)){
+        if (!(p.isOp()) || GameRoomManager.containsGamePlayer(p)){
             e.setCancelled(true);
         }
     }
@@ -65,7 +63,7 @@ public class LobbyItemEvent implements Listener {
     @EventHandler
     public void PlaceBlockCancel(BlockPlaceEvent e){
         Player p = e.getPlayer();
-        if (!(p.isOp()) || GamePlayer.contains(p)){
+        if (!(p.isOp()) || GameRoomManager.containsGamePlayer(p)){
             e.setCancelled(true);
         }
     }

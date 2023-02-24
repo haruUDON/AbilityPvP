@@ -57,6 +57,7 @@ public final class AbilityPvP extends JavaPlugin {
         GameMain.setupJoinPlayer();
         Gacha.setupGachaResult();
         TickLoop.StartLoop();
+        GameRoomManager.setupGameRoomManager();
 
         getCommand("testability").setExecutor(new TestAbility());
         getCommand("test").setExecutor(new TestAbility());
